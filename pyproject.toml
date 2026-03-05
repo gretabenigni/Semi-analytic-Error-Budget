@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "semi-analytic-error-budget"
+description = "Wavefront error budget estimator for a SCAO Pyramid WFS based Adaptive Optics system"
+readme = "README.md"
+version = "0.1.0"
+requires-python = ">=3.9"
+license = {file = "LICENSE"}
+authors = [
+    { name = "Greta Benigni", email = "greta.benigni@inaf.it" },
+    { name = "INAF Arcetri Adaptive Optics group" }
+]
+keywords = ["Adaptive Optics", "Astrophysics", "INAF", "Arcetri"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+]
+dynamic = ["dependencies"]
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
