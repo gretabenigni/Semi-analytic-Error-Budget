@@ -693,7 +693,7 @@ def interpolate_and_normalize_psd(freqs_interpolation, freqs_original, PSD_origi
 
 def total_variance(fit_err, temp_err, alias_err, meas_err):
     var_tot = np.real(fit_err) + np.real(temp_err) + np.real(meas_err) + np.real(alias_err)
-    print ("La varianza totale è:", var_tot)
+    print ("Total variance:", var_tot)
     return var_tot 
 
 
