@@ -274,8 +274,13 @@ def extract_propagation_coefficients(file_path_matrix_R):
     with fits.open(file_path_matrix_R) as hdul: 
         
         try: 
-            
-            R = np.array(hdul[1].data.copy())                # pylint: disable=E1101 
+
+            if len(hdul) > 1:
+                h = hdul[1]
+            else:
+                h = hdul[0]
+            R = np.array(h.data.copy())                # pylint: disable=E1101
+            print("Shape of R:", R.shape)
             if R.ndim == 2:    
                 return np.diag(R @ R.T)
             else:

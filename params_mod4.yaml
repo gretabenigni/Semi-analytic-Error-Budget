@@ -43,8 +43,8 @@ wavefront_sensor:
   noise_readout: 5   
 
 files:
-  #matrice di ricostruzione 
-  file_path_reconstruction_matrix1: "src/file_fits/ANDES/ANDES_ps400p0.097_pyr100x100_wl850_fv2.1_ft4.0_slInten_ma3_bn1_th_mn4000_noSlaving_hexObstr_spider2023_OOMAO_rot15.fits"
+  # vettore dei noise propagation coefficients
+  file_path_reconstruction_matrix1: "src/file_fits/ANDES/ANDES_pyr100x100_wl850_fv2.1_slInten_ma3_bn1_mn4000_noise_prop_coeff.fits"
   # file path della PSD_windshake (tip e tilt)
   file_path_PSD_windshake1: "src/file_fits/ANDES/morfeo_windshake8ms_psd_2022_1k.fits"  
 
