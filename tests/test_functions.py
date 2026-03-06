@@ -17,7 +17,7 @@ import numpy as np
 from scipy import integrate as scipy_integrate
 
 from src.Functions import (
-    build_optical_gain_grid,
+    _load_andes_gain_grid,
     compute_k_prime,
     compute_noise_PSD,
     compute_slope_noise_variance,
@@ -526,19 +526,25 @@ class _ChdirMixin:
 
 
 class TestBuildOpticalGainGrid(_ChdirMixin, unittest.TestCase):
-    """build_optical_gain_grid assembles a 2×N array from ANDES FITS files."""
+    """_load_andes_gain_grid assembles a 2×N array from ANDES FITS files."""
 
     def test_output_is_2d_ndarray(self):
-        grid = build_optical_gain_grid()
+        file_mod0 = "src/file_fits/ANDES/ANDES_og_mod0.fits"
+        file_mod4 = "src/file_fits/ANDES/ANDES_og_mod4.fits"
+        grid = _load_andes_gain_grid(file_mod0, file_mod4)
         self.assertIsInstance(grid, np.ndarray)
         self.assertEqual(grid.ndim, 2)
 
     def test_two_rows_one_per_modulation_radius(self):
         # One row for mod0, one for mod4
-        self.assertEqual(build_optical_gain_grid().shape[0], 2)
+        file_mod0 = "src/file_fits/ANDES/ANDES_og_mod0.fits"
+        file_mod4 = "src/file_fits/ANDES/ANDES_og_mod4.fits"
+        self.assertEqual(_load_andes_gain_grid(file_mod0, file_mod4).shape[0], 2)
 
     def test_all_values_are_positive(self):
-        self.assertTrue(np.all(build_optical_gain_grid() > 0))
+        file_mod0 = "src/file_fits/ANDES/ANDES_og_mod0.fits"
+        file_mod4 = "src/file_fits/ANDES/ANDES_og_mod4.fits"
+        self.assertTrue(np.all(_load_andes_gain_grid(file_mod0, file_mod4) > 0))
 
 
 class TestReadSigmaSlopes(_ChdirMixin, unittest.TestCase):

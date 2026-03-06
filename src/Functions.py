@@ -294,23 +294,91 @@ def extract_propagation_coefficients(file_path_matrix_R):
             return None
 
 
+# =============================================================================
+# OPTICAL GAIN MODULE
+# =============================================================================
+
 # Function to build the optical gain grid from FITS files.
 # It reads the last-mode optical gain values for two modulation radii and arranges them 
 # into a 2D grid indexed by modulation radius and seeing.
 
-def build_optical_gain_grid():
+def _load_andes_gain_grid(file_mod0, file_mod4):
+    """
+    Loads and stacks the ANDES optical gain data from two separate FITS files.
+    """
+    with fits.open(file_mod0) as hdul:
+        gain_mod0 = hdul[0].data[:, -1]
+        
+    with fits.open(file_mod4) as hdul:
+        gain_mod4 = hdul[0].data[:, -1]
+        
+    return np.vstack([gain_mod0, gain_mod4])
+
+
+# Function to compute the optical gain for a given modulation radius and seeing.
+# Uses an optical gain grid from ANDES_og_mod0.fits and ANDES_og_mod4.fits and performs
+# a 2D interpolation to estimate the gain for the given modulation radius and seeing
+
+def compute_andes_optical_gain(file_mod0, file_mod4,
+                                seeing, modulation_radius):
+    """
+    Computes the optical gain for the ANDES system using 2D interpolation.
+    Axes: modulation radius, seeing.
+    """
+    gain_grid = _load_andes_gain_grid(file_mod0, file_mod4)
     
-    with fits.open("src/file_fits/ANDES/ANDES_og_mod0.fits") as hdul:
-        data0 = hdul[0].data                                   # pylint: disable=E1101   
-        optical_gain_mod_rad_0 = data0[:, -1]                 
- 
-    with fits.open("src/file_fits/ANDES/ANDES_og_mod4.fits") as hdul: 
-        data4 = hdul[0].data                                   # pylint: disable=E1101   
-        optical_gain_mod_rad_4 = data4[:, -1]
+    # Define the grid axes for ANDES
+    modal_radius_vals = np.array([0.0, 4.0])
+    seeing_vals = np.array([0.4, 0.6, 0.8, 1.0, 1.2, 1.4])
+    
+    # 2D Interpolation
+    interp_optical_gain = RegularGridInterpolator(
+        (modal_radius_vals, seeing_vals), 
+        gain_grid, 
+        bounds_error=False, 
+        fill_value=None
+    )
+    
+    interpolated_gain = float(interp_optical_gain((modulation_radius, seeing)))
+    return interpolated_gain
 
-    opt_gain_grid = np.vstack([optical_gain_mod_rad_0, optical_gain_mod_rad_4])   
 
-    return opt_gain_grid
+# SOUL optical gain data is stored in a single FITS file as a 3D data cube,
+# with axes for modulated modes, binning, and magnitudes.
+
+def _load_soul_gain_cube(filepath):
+    """
+    Loads the SOUL optical gain data cube and its axes from a single FITS file.
+    """
+    with fits.open(filepath) as hdul:
+        magnitudes = hdul[1].data     # Shape: (11,)
+        binning = hdul[2].data        # Shape: (4,)
+        mod_modes = hdul[3].data      # Shape: (6,)
+        gain_cube = hdul[4].data      # Shape: (6, 4, 11)
+        
+    return mod_modes, binning, magnitudes, gain_cube
+
+
+# SOUL optical gain is computed by performing a 3D interpolation over the modulated modes,
+# binning, and magnitudes.
+
+def compute_soul_optical_gain(filepath, target_mod_modes, target_binning, target_magnitude):
+    """
+    Computes the optical gain for the SOUL system using 3D interpolation.
+    Axes order must match the data cube shape: (mod_modes, binning, magnitudes).
+    """
+    mod_modes, binning, magnitudes, gain_cube = _load_soul_gain_cube(filepath)
+    
+    # 3D Interpolation
+    interp_optical_gain = RegularGridInterpolator(
+        (mod_modes, binning, magnitudes), 
+        gain_cube, 
+        bounds_error=False, 
+        fill_value=None
+    )
+    
+    interpolated_gain = float(interp_optical_gain((target_mod_modes, target_binning, target_magnitude)))
+    return interpolated_gain
 
 
 # Function to perform a 2D interpolation of the optical gain over modulation 
@@ -323,24 +391,6 @@ def double_interpolation_optical_gain(modal_radius_val, seeing_val, optical_gain
     last_opt_gain = float(interp_optical_gain((modulation_radius, seeing)))
     
     return last_opt_gain
-    
-
-# Function to compute the optical gain for a given modulation radius and seeing.
-# Uses an optical gain grid from ANDES_og_mod0.fits and ANDES_og_mod4.fits and performs
-# a 2D interpolation to estimate the gain for the given modulation radius and seeing
-
-def c_optical_gain (seeing, modulation_radius):
-    
-    optical_gain_grid = build_optical_gain_grid()
-   
-    modal_radius_val = np.array ([0.0, 4.0])
-    seeing_val = np.array([0.4, 0.6, 0.8, 1.0, 1.2, 1.4])  
-   
-    last_optical_gain = double_interpolation_optical_gain(modal_radius_val, seeing_val,
-                                                          optical_gain_grid, modulation_radius, 
-                                                          seeing)
-   
-    return last_optical_gain
 
 
 # Function to read and return the sigma slopes data from the FITS file.
@@ -456,14 +506,13 @@ def aliasing_psd_from_coeffs(actuators_number, omega_temp_freq_interval, c, k,
 
 def PSD_aliasing (actuators_number, omega_temp_freq_interval, alpha,  
                   telescope_diameter, seeing, modulation_radius, windspeed,
-                  maximum_radial_order_corrected, file_path_matrix_R):
+                  maximum_radial_order_corrected, file_path_matrix_R, c_optg):
     
-    c = c_optical_gain (seeing, modulation_radius)
-    k = k_coeff_aliasing(modulation_radius, seeing, c, alpha, telescope_diameter,
+    k = k_coeff_aliasing(modulation_radius, seeing, c_optg, alpha, telescope_diameter,
                          omega_temp_freq_interval, file_path_matrix_R, windspeed,
                          maximum_radial_order_corrected)
     PSD_alias = aliasing_psd_from_coeffs(actuators_number, omega_temp_freq_interval, 
-                                         c, k, alpha, telescope_diameter, 
+                                         c_optg, k, alpha, telescope_diameter, 
                                          windspeed, maximum_radial_order_corrected)
 
     return PSD_alias  
@@ -476,11 +525,11 @@ def PSD_aliasing (actuators_number, omega_temp_freq_interval, alpha,
 
 def aliasing_variance (transf_funct, actuators_number, omega_temp_freq_interval, 
                        alpha, telescope_diameter, seeing, modulation_radius, windspeed, 
-                       maximum_radial_order_corrected, file_path_matrix_R):
+                       maximum_radial_order_corrected, file_path_matrix_R, c_optg):
     
     PSD_input = PSD_aliasing(actuators_number, omega_temp_freq_interval, alpha, telescope_diameter,
                              seeing, modulation_radius, windspeed, maximum_radial_order_corrected,
-                             file_path_matrix_R)
+                             file_path_matrix_R, c_optg)
     
     variance_alias, PSD_output = compute_output_PSD_and_integrate(actuators_number, transf_funct,
                                                                   PSD_input, omega_temp_freq_interval)
@@ -604,10 +653,18 @@ def variance(omega_temp_freq_interval, t_0, gain, num1, num2, num3, den1, den2, 
              sky_bkg, dark_curr, read_out_noise, photon_flux, frame_rate, magnitudo, 
              n_subaperture, collecting_area, pixel_pos, fitting_coeff, alpha, seeing, 
              modulation_radius, windspeed, maximum_radial_order_corrected, transfer_function_type,
-             PSD_tur=None, PSD_vib=None, file_path_matrix_R=None):
+             file_optg, PSD_tur=None, PSD_vib=None, file_path_matrix_R=None, system="ANDES"):
     
    
     valid_types = ("fitting", "temp", "alias", "meas")
+    
+    # optical gains are needed for both aliasing and measurement variance,
+    # so we compute them at the beginning
+    if system == "ANDES":
+        c_optg = compute_andes_optical_gain(file_optg[0], file_optg[1], seeing, modulation_radius)
+    # TODO not supported yet
+    #elif system == "SOUL":
+    #    gain = compute_soul_optical_gain(file_optg, mod_modes, binning, magnitude)
     
     if variance_type not in valid_types: 
         raise ValueError("Variance_type must be one of: 'fitting', 'temp', 'alias', or 'meas'")
@@ -639,7 +696,7 @@ def variance(omega_temp_freq_interval, t_0, gain, num1, num2, num3, den1, den2, 
  
         sigma2_alias, PSD_out, PSD_in = aliasing_variance(H, actuators_number, omega_temp_freq_interval, 
                                alpha, telescope_diameter, seeing, modulation_radius, windspeed, 
-                               maximum_radial_order_corrected, file_path_matrix_R)
+                               maximum_radial_order_corrected, file_path_matrix_R, c_optg)
        
         print("Aliasing:", sigma2_alias)       
         return sigma2_alias, PSD_out, PSD_in, H

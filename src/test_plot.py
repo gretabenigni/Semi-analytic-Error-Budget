@@ -15,7 +15,8 @@ from scipy import integrate
 from astropy.io import fits                                                    
 
 from src.Functions import total_variance
-from src.Functions import c_optical_gain
+from src.Functions import compute_andes_optical_gain
+#from src.Functions import compute_soul_optical_gain
 from src.Functions import extract_propagation_coefficients
 from src.Functions import PSD_aliasing
 from src.Functions import variance
@@ -31,7 +32,7 @@ def variance_total_for_test(number_of_actuators, gain_value_, omega_temp_freq_in
                             sky_bkg, dark_curr, read_out_noise, photon_flux, frame_rate, magnitudo, 
                             n_subaperture, collecting_area, pixel_pos, fitting_coeff, alpha, 
                             seeing, modulation_radius, windspeed, maximum_radial_order_corrected,
-                            file_path_reconstruction_matrix, PSD_turbolence, PSD_vibration_wind):
+                            file_path_reconstruction_matrix, file_optg, PSD_turbolence, PSD_vibration_wind):
     
                                                             
     tot_variance = np.zeros_like(gain_value_, dtype=float)
@@ -47,7 +48,7 @@ def variance_total_for_test(number_of_actuators, gain_value_, omega_temp_freq_in
                                 dark_curr, read_out_noise, photon_flux, frame_rate, magnitudo, 
                                 n_subaperture, collecting_area, pixel_pos, fitting_coeff, alpha, 
                                 seeing,modulation_radius, windspeed, maximum_radial_order_corrected, 
-                                None, PSD_tur=None, PSD_vib=None, file_path_matrix_R=None)
+                                None, file_optg, PSD_tur=None, PSD_vib=None, file_path_matrix_R=None)
     
         variance_temporal,_ , _, _ = variance(omega_temp_freq_interval, t_0, gain_val, 
                                               num1, num2, num3, den1, den2, den3, "temp", 
@@ -55,8 +56,8 @@ def variance_total_for_test(number_of_actuators, gain_value_, omega_temp_freq_in
                                               F_excess, sky_bkg, dark_curr, read_out_noise, photon_flux, frame_rate, magnitudo, 
                                               n_subaperture, collecting_area, pixel_pos, 
                                               fitting_coeff, alpha, seeing, modulation_radius, 
-                                              windspeed, maximum_radial_order_corrected,'H_r', PSD_tur=PSD_turbolence, 
-                                              PSD_vib=PSD_vibration_wind, file_path_matrix_R=None)
+                                              windspeed, maximum_radial_order_corrected,'H_r', file_optg,
+                                              PSD_tur=PSD_turbolence, PSD_vib=PSD_vibration_wind, file_path_matrix_R=None)
     
         variance_aliasing, _, _, _ = variance(omega_temp_freq_interval, t_0, gain_val, num1, num2, 
                                               num3, den1, den2, den3, "alias", number_of_actuators, 
@@ -64,7 +65,7 @@ def variance_total_for_test(number_of_actuators, gain_value_, omega_temp_freq_in
                                               dark_curr, read_out_noise, photon_flux, frame_rate, magnitudo, 
                                               n_subaperture, collecting_area, pixel_pos, fitting_coeff, alpha, seeing, 
                                               modulation_radius, windspeed, maximum_radial_order_corrected,
-                                              'H_n', PSD_tur=None, PSD_vib=None, file_path_matrix_R=file_path_reconstruction_matrix)
+                                              'H_n', file_optg, PSD_tur=None, PSD_vib=None, file_path_matrix_R=file_path_reconstruction_matrix)
     
         variance_measurement, _, _, _ = variance(omega_temp_freq_interval, t_0, gain_val, num1, num2, 
                                                  num3, den1, den2, den3, "meas", number_of_actuators, 
@@ -72,7 +73,7 @@ def variance_total_for_test(number_of_actuators, gain_value_, omega_temp_freq_in
                                                  dark_curr, read_out_noise, photon_flux, frame_rate, magnitudo, 
                                                  n_subaperture, collecting_area, pixel_pos, fitting_coeff, alpha, seeing, 
                                                  modulation_radius, windspeed, maximum_radial_order_corrected,
-                                                 'H_n', PSD_tur=None, PSD_vib=None, file_path_matrix_R=file_path_reconstruction_matrix)
+                                                 'H_n', file_optg, PSD_tur=None, PSD_vib=None, file_path_matrix_R=file_path_reconstruction_matrix)
         
         tot_variance[i] = total_variance(np.real(variance_fit), np.real(variance_temporal), 
                                          np.real(variance_measurement), np.real(variance_aliasing))            
@@ -88,7 +89,7 @@ def test(gain_min, gain_max, omega_temp_freq_interval, t_0, num1, num2,
          sky_bkg, dark_curr, read_out_noise, photon_flux, frame_rate, magnitudo, 
          n_subaperture, collecting_area, pixel_pos, fitting_coeff, alpha, seeing, 
          modulation_radius, windspeed, maximum_radial_order_corrected,
-         file_path_reconstruction_matrix, PSD_turbolence, PSD_vibration_wind): 
+         file_path_reconstruction_matrix, file_optg, PSD_turbolence, PSD_vibration_wind): 
    
     do_test = input("Do you want to do the test? (y/n):") 
 
@@ -105,7 +106,7 @@ def test(gain_min, gain_max, omega_temp_freq_interval, t_0, num1, num2,
                                                  photon_flux, frame_rate, magnitudo, n_subaperture, collecting_area, 
                                                  pixel_pos, fitting_coeff, alpha, seeing, 
                                                  modulation_radius, windspeed, maximum_radial_order_corrected,
-                                                 file_path_reconstruction_matrix, 
+                                                 file_path_reconstruction_matrix, file_optg,
                                                  PSD_turbolence, PSD_vibration_wind)
         
         plt.plot(gain_value, variance_total, marker='o')    
@@ -185,9 +186,13 @@ def plot_all_PSD(f, PSD_out_t, PSD_out_m, PSD_out_a):
     
 def check(file_path_matrix_R, telescope_diameter, seeing, modulation_radius,
           actuators_number, alpha, omega_temp_freq_interval, windspeed, 
-          maximum_radial_order_corrected):
+          maximum_radial_order_corrected,file_optg, system="ANDES"):
     
-    c = c_optical_gain (seeing, modulation_radius)
+    if system == "ANDES":
+        c_optg = compute_andes_optical_gain(file_optg[0], file_optg[1], seeing, modulation_radius)
+    # TODO not supported yet
+    #elif system == "SOUL":
+    #    gain = compute_soul_optical_gain(file_optg, mod_modes, binning, magnitude)
     
     p_coefficient = extract_propagation_coefficients(file_path_matrix_R)
     
@@ -211,15 +216,16 @@ def check(file_path_matrix_R, telescope_diameter, seeing, modulation_radius,
     
     for i in range (actuators_number):
         
-        sigma_alias_2 = p_coefficient[i] * (sigma_slope_alias ** 2) / c ** 2
+        sigma_alias_2 = p_coefficient[i] * (sigma_slope_alias ** 2) / c_optg ** 2
         
         sigma_alias_2_two_modes += sigma_alias_2
         
     print("ALIASING VARIANCE:", sigma_alias_2_two_modes)
     
     PSD_al = PSD_aliasing (actuators_number, omega_temp_freq_interval, alpha, 
-                           telescope_diameter, seeing, modulation_radius, windspeed, maximum_radial_order_corrected,
-                           file_path_matrix_R)
+                           telescope_diameter, seeing, modulation_radius, windspeed,
+                           maximum_radial_order_corrected,
+                           file_path_matrix_R, c_optg)
     
     
     integral_per_mode = integrate.simpson(PSD_al, omega_temp_freq_interval)
@@ -227,7 +233,7 @@ def check(file_path_matrix_R, telescope_diameter, seeing, modulation_radius,
     
     print("ALIASING VARIANCE FROM PSD:", sigma_alias_2_PSD_total)
     
-    sigma_alias_2_one_mode = p_coefficient * (sigma_slope_alias ** 2) / c ** 2
+    sigma_alias_2_one_mode = p_coefficient * (sigma_slope_alias ** 2) / c_optg ** 2
     
     print("ALIASING VARIANCE ONE MODE:", sigma_alias_2_one_mode[0])
     
@@ -236,7 +242,7 @@ def check(file_path_matrix_R, telescope_diameter, seeing, modulation_radius,
     
 def plot_PSD_alias_mode_0(actuators_number, omega_temp_freq_interval, alpha, telescope_diameter,
                           seeing, modulation_radius, windspeed, maximum_radial_order_corrected,
-                          file_path_matrix_R):
+                          file_path_matrix_R, file_optg, system="ANDES"):
     
     with fits.open("src/file_fits/ANDES/modal_psd_aliasing.fits") as hdul:
         data = hdul[0].data 
@@ -245,12 +251,16 @@ def plot_PSD_alias_mode_0(actuators_number, omega_temp_freq_interval, alpha, tel
         mode_0 = data[:, 1]
         
         freq_rad_s = 2 * np.pi * freq_hz
-        c = c_optical_gain (seeing, modulation_radius)
-        PSD_aliasing_mode0_given = mode_0 / (c ** 2 * 2 * np.pi)             
+        if system == "ANDES":
+            c_optg = compute_andes_optical_gain(file_optg[0], file_optg[1], seeing, modulation_radius)
+        # TODO not supported yet
+        #elif system == "SOUL":
+        #    gain = compute_soul_optical_gain(file_optg, mod_modes, binning, magnitude)
+        PSD_aliasing_mode0_given = mode_0 / (c_optg ** 2 * 2 * np.pi)             
         
     PSD_alising_mine = PSD_aliasing (actuators_number, omega_temp_freq_interval, alpha,  
-                                           telescope_diameter, seeing, modulation_radius, windspeed, 
-                                           maximum_radial_order_corrected,file_path_matrix_R)
+                                     telescope_diameter, seeing, modulation_radius, windspeed, 
+                                      maximum_radial_order_corrected,file_path_matrix_R, c_optg)
     
     PSD_alising_mine_mode0 = PSD_alising_mine[0,:]
     
