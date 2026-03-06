@@ -329,11 +329,11 @@ def double_interpolation_optical_gain(modal_radius_val, seeing_val, optical_gain
 # Uses an optical gain grid from ANDES_og_mod0.fits and ANDES_og_mod4.fits and performs
 # a 2D interpolation to estimate the gain for the given modulation radius and seeing
 
-def c_optical_gain (lambda_, telescope_diameter, seeing, modulation_radius):
+def c_optical_gain (seeing, modulation_radius):
     
     optical_gain_grid = build_optical_gain_grid()
    
-    modal_radius_val = np.array ([0.0, 4.0 * (lambda_/ telescope_diameter)])
+    modal_radius_val = np.array ([0.0, 4.0])
     seeing_val = np.array([0.4, 0.6, 0.8, 1.0, 1.2, 1.4])  
    
     last_optical_gain = double_interpolation_optical_gain(modal_radius_val, seeing_val,
@@ -397,14 +397,14 @@ def compute_k_prime(omega_temp_freq_interval, alpha, sigma_slope_alias, c, teles
 # It uses sigma slope data from FITS files and applies 2D interpolation over 
 # modulation radius and seeing.
 
-def k_coeff_aliasing(modulation_radius, seeing, c, alpha, lambda_, telescope_diameter, 
-                     omega_temp_freq_interval, file_path_matrix_R, windspeed, maximum_radial_order_corrected):
+def k_coeff_aliasing(modulation_radius, seeing, c, alpha, telescope_diameter, 
+                     omega_temp_freq_interval, file_path_matrix_R, windspeed,
+                     maximum_radial_order_corrected):
     
     data_slopes = read_sigma_slopes()  
     
     seeing_vals = data_slopes[0,0,:]                                           
-    modal_radius_vals = np.array([0.0, 1.0, 2.0 * lambda_ / telescope_diameter, 3.0 * lambda_ / telescope_diameter,
-                                  4.0 * lambda_ / telescope_diameter, 8.0 * lambda_ / telescope_diameter]) 
+    modal_radius_vals = np.array([0.0, 1.0, 2.0, 3.0, 4.0, 8.0]) 
     
     sigma_slope_alias = double_interpolation_sigma_slope(modal_radius_vals, seeing_vals, data_slopes, 
                                                          modulation_radius, seeing)
@@ -454,13 +454,14 @@ def aliasing_psd_from_coeffs(actuators_number, omega_temp_freq_interval, c, k,
 # Function to compute the optical gain c, the modal aliasing coefficients k 
 # and, then, to build the corresponding aliasing PSD matrix.
 
-def PSD_aliasing (actuators_number, omega_temp_freq_interval, alpha, lambda_,  
-                  telescope_diameter, seeing, modulation_radius, windspeed, maximum_radial_order_corrected,
-                  file_path_matrix_R):
+def PSD_aliasing (actuators_number, omega_temp_freq_interval, alpha,  
+                  telescope_diameter, seeing, modulation_radius, windspeed,
+                  maximum_radial_order_corrected, file_path_matrix_R):
     
-    c = c_optical_gain (lambda_, telescope_diameter, seeing, modulation_radius)
-    k = k_coeff_aliasing(modulation_radius, seeing, c, alpha, lambda_, telescope_diameter, 
-                         omega_temp_freq_interval, file_path_matrix_R, windspeed, maximum_radial_order_corrected)
+    c = c_optical_gain (seeing, modulation_radius)
+    k = k_coeff_aliasing(modulation_radius, seeing, c, alpha, telescope_diameter,
+                         omega_temp_freq_interval, file_path_matrix_R, windspeed,
+                         maximum_radial_order_corrected)
     PSD_alias = aliasing_psd_from_coeffs(actuators_number, omega_temp_freq_interval, 
                                          c, k, alpha, telescope_diameter, 
                                          windspeed, maximum_radial_order_corrected)
@@ -474,12 +475,12 @@ def PSD_aliasing (actuators_number, omega_temp_freq_interval, alpha, lambda_,
 # with pyramid wavefront sensors", Agapito and Pinna, 2019).  
 
 def aliasing_variance (transf_funct, actuators_number, omega_temp_freq_interval, 
-                       alpha, lambda_,telescope_diameter, seeing, modulation_radius, windspeed, 
+                       alpha, telescope_diameter, seeing, modulation_radius, windspeed, 
                        maximum_radial_order_corrected, file_path_matrix_R):
     
-    PSD_input = PSD_aliasing(actuators_number, omega_temp_freq_interval, alpha, lambda_,  
-                      telescope_diameter, seeing, modulation_radius, windspeed, maximum_radial_order_corrected,
-                      file_path_matrix_R)
+    PSD_input = PSD_aliasing(actuators_number, omega_temp_freq_interval, alpha, telescope_diameter,
+                             seeing, modulation_radius, windspeed, maximum_radial_order_corrected,
+                             file_path_matrix_R)
     
     variance_alias, PSD_output = compute_output_PSD_and_integrate(actuators_number, transf_funct,
                                                                   PSD_input, omega_temp_freq_interval)
@@ -601,7 +602,7 @@ def build_transfer_function(gain, omega_temp_freq_interval, t_0, actuators_numbe
 def variance(omega_temp_freq_interval, t_0, gain, num1, num2, num3, den1, den2, den3, 
              variance_type, actuators_number, telescope_diameter, Fried_parameter, F_excess, 
              sky_bkg, dark_curr, read_out_noise, photon_flux, frame_rate, magnitudo, 
-             n_subaperture, collecting_area, pixel_pos, fitting_coeff, alpha, lambda_, seeing, 
+             n_subaperture, collecting_area, pixel_pos, fitting_coeff, alpha, seeing, 
              modulation_radius, windspeed, maximum_radial_order_corrected, transfer_function_type,
              PSD_tur=None, PSD_vib=None, file_path_matrix_R=None):
     
@@ -637,7 +638,7 @@ def variance(omega_temp_freq_interval, t_0, gain, num1, num2, num3, den1, den2, 
                                     den2, den3,  transfer_function_type)
  
         sigma2_alias, PSD_out, PSD_in = aliasing_variance(H, actuators_number, omega_temp_freq_interval, 
-                               alpha, lambda_,telescope_diameter, seeing, modulation_radius, windspeed, 
+                               alpha, telescope_diameter, seeing, modulation_radius, windspeed, 
                                maximum_radial_order_corrected, file_path_matrix_R)
        
         print("Aliasing:", sigma2_alias)       
@@ -708,7 +709,7 @@ def total_variance(fit_err, temp_err, alias_err, meas_err):
 # def variance_total_for_test(number_of_actuators, gain_value_, omega_temp_freq_interval, t_0, num1, num2, 
 #                             num3, den1, den2, den3, telescope_diameter, Fried_parameter, F_excess, 
 #                             sky_bkg, dark_curr, read_out_noise, photon_flux, frame_rate, magnitudo, 
-#                             n_subaperture, collecting_area, pixel_pos, fitting_coeff, alpha, lambda_, 
+#                             n_subaperture, collecting_area, pixel_pos, fitting_coeff, alpha,
 #                             seeing, modulation_radius, windspeed, maximum_radial_order_corrected,
 #                             file_path_reconstruction_matrix, PSD_turbolence, PSD_vibration_wind):
     
@@ -725,7 +726,7 @@ def total_variance(fit_err, temp_err, alias_err, meas_err):
 #                                 telescope_diameter, Fried_parameter, F_excess, sky_bkg, 
 #                                 dark_curr, read_out_noise, photon_flux, frame_rate, magnitudo, 
 #                                 n_subaperture, collecting_area, pixel_pos, fitting_coeff, alpha, 
-#                                 lambda_, seeing,modulation_radius, windspeed, maximum_radial_order_corrected, 
+#                                 seeing, modulation_radius, windspeed, maximum_radial_order_corrected, 
 #                                 None, PSD_tur=None, PSD_vib=None, file_path_matrix_R=None)
     
 #         variance_temporal,_ , _, _ = variance(omega_temp_freq_interval, t_0, gain_val, 
@@ -733,7 +734,7 @@ def total_variance(fit_err, temp_err, alias_err, meas_err):
 #                                               number_of_actuators, telescope_diameter, Fried_parameter, 
 #                                               F_excess, sky_bkg, dark_curr, read_out_noise, photon_flux, frame_rate, magnitudo, 
 #                                               n_subaperture, collecting_area, pixel_pos, 
-#                                               fitting_coeff, alpha, lambda_, seeing, modulation_radius, 
+#                                               fitting_coeff, alpha, seeing, modulation_radius, 
 #                                               windspeed, maximum_radial_order_corrected,'H_r', PSD_tur=PSD_turbolence, 
 #                                               PSD_vib=PSD_vibration_wind, file_path_matrix_R=None)
     
@@ -741,7 +742,7 @@ def total_variance(fit_err, temp_err, alias_err, meas_err):
 #                                               num3, den1, den2, den3, "alias", number_of_actuators, 
 #                                               telescope_diameter, Fried_parameter, F_excess, sky_bkg,
 #                                               dark_curr, read_out_noise, photon_flux, frame_rate, magnitudo, 
-#                                               n_subaperture, collecting_area, pixel_pos, fitting_coeff, alpha, lambda_, seeing, 
+#                                               n_subaperture, collecting_area, pixel_pos, fitting_coeff, alpha, seeing, 
 #                                               modulation_radius, windspeed, maximum_radial_order_corrected,
 #                                               'H_n', PSD_tur=None, PSD_vib=None, file_path_matrix_R=file_path_reconstruction_matrix)
     
@@ -749,7 +750,7 @@ def total_variance(fit_err, temp_err, alias_err, meas_err):
 #                                                  num3, den1, den2, den3, "meas", number_of_actuators, 
 #                                                  telescope_diameter, Fried_parameter, F_excess, sky_bkg, 
 #                                                  dark_curr, read_out_noise, photon_flux, frame_rate, magnitudo, 
-#                                                  n_subaperture, collecting_area, pixel_pos, fitting_coeff, alpha, lambda_, seeing, 
+#                                                  n_subaperture, collecting_area, pixel_pos, fitting_coeff, alpha, seeing, 
 #                                                  modulation_radius, windspeed, maximum_radial_order_corrected,
 #                                                  'H_n', PSD_tur=None, PSD_vib=None, file_path_matrix_R=file_path_reconstruction_matrix)
         
@@ -765,7 +766,7 @@ def total_variance(fit_err, temp_err, alias_err, meas_err):
 # def test(gain_min, gain_max, omega_temp_freq_interval, t_0, num1, num2, 
 #          num3, den1, den2, den3, telescope_diameter, Fried_parameter, F_excess, 
 #          sky_bkg, dark_curr, read_out_noise, photon_flux, frame_rate, magnitudo, 
-#          n_subaperture, collecting_area, pixel_pos, fitting_coeff, alpha, lambda_, seeing, 
+#          n_subaperture, collecting_area, pixel_pos, fitting_coeff, alpha, seeing, 
 #          modulation_radius, windspeed, maximum_radial_order_corrected,
 #          file_path_reconstruction_matrix, PSD_turbolence, PSD_vibration_wind): 
    
@@ -782,7 +783,7 @@ def total_variance(fit_err, temp_err, alias_err, meas_err):
 #                                                  t_0, num1, num2, num3, den1, den2, den3, telescope_diameter, 
 #                                                  Fried_parameter, F_excess, sky_bkg, dark_curr,read_out_noise, 
 #                                                  photon_flux, frame_rate, magnitudo, n_subaperture, collecting_area, 
-#                                                  pixel_pos, fitting_coeff, alpha, lambda_, seeing, 
+#                                                  pixel_pos, fitting_coeff, alpha, seeing, 
 #                                                  modulation_radius, windspeed, maximum_radial_order_corrected,
 #                                                  file_path_reconstruction_matrix, 
 #                                                  PSD_turbolence, PSD_vibration_wind)
@@ -862,11 +863,11 @@ def total_variance(fit_err, temp_err, alias_err, meas_err):
 # # aliasing PSD. 
 # # The function also print the variance of the first mode alone in both cases.
     
-# def check(file_path_matrix_R, lambda_, telescope_diameter, seeing, modulation_radius,
+# def check(file_path_matrix_R, telescope_diameter, seeing, modulation_radius,
 #           actuators_number, alpha, omega_temp_freq_interval, windspeed, 
 #           maximum_radial_order_corrected):
     
-#     c = c_optical_gain (lambda_, telescope_diameter, seeing, modulation_radius)
+#     c = c_optical_gain (seeing, modulation_radius)
     
 #     p_coefficient = extract_propagation_coefficients(file_path_matrix_R)
     
@@ -879,8 +880,8 @@ def total_variance(fit_err, temp_err, alias_err, meas_err):
 #     data_slopes = read_sigma_slopes()  
 #     seeing_vals = data_slopes[0,0,:]                                           
   
-#     modal_radius_vals = np.array([0.0, 1.0, 2.0 * lambda_ / telescope_diameter, 3.0 * lambda_ / telescope_diameter,
-#                                   4.0 * lambda_ / telescope_diameter, 8.0 * lambda_ / telescope_diameter]) 
+#     modal_radius_vals = np.array([0.0, 1.0, 2.0, 3.0, 4.0, 8.0]) 
+    
     
     
 #     sigma_slope_alias = double_interpolation_sigma_slope(modal_radius_vals, seeing_vals, data_slopes, 
@@ -896,7 +897,7 @@ def total_variance(fit_err, temp_err, alias_err, meas_err):
         
 #     print("ALIASING VARIANCE:", sigma_alias_2_two_modes)
     
-#     PSD_al = PSD_aliasing (actuators_number, omega_temp_freq_interval, alpha, lambda_,  
+#     PSD_al = PSD_aliasing (actuators_number, omega_temp_freq_interval, alpha,  
 #                            telescope_diameter, seeing, modulation_radius, windspeed, maximum_radial_order_corrected,
 #                            file_path_matrix_R)
     
@@ -913,7 +914,7 @@ def total_variance(fit_err, temp_err, alias_err, meas_err):
 #     print("ALIASING VARIANCE FROM PSD ONE MODE:", integral_per_mode[0])
     
     
-# def plot_PSD_alias_mode_0(actuators_number, omega_temp_freq_interval, alpha,lambda_, telescope_diameter,
+# def plot_PSD_alias_mode_0(actuators_number, omega_temp_freq_interval, alpha, telescope_diameter,
 #                           seeing, modulation_radius, windspeed, maximum_radial_order_corrected,
 #                           file_path_matrix_R):
     
@@ -924,10 +925,10 @@ def total_variance(fit_err, temp_err, alias_err, meas_err):
 #         mode_0 = data[:, 1]
         
 #         freq_rad_s = 2 * np.pi * freq_hz
-#         c = c_optical_gain (lambda_, telescope_diameter, seeing, modulation_radius)
+#         c = c_optical_gain (seeing, modulation_radius)
 #         PSD_aliasing_mode0_given = mode_0 / (c ** 2 * 2 * np.pi)             
         
-#     PSD_alising_mine = PSD_aliasing (actuators_number, omega_temp_freq_interval, alpha, lambda_,  
+#     PSD_alising_mine = PSD_aliasing (actuators_number, omega_temp_freq_interval, alpha,  
 #                                            telescope_diameter, seeing, modulation_radius, windspeed, 
 #                                            maximum_radial_order_corrected,file_path_matrix_R)
     

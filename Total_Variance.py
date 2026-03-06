@@ -48,7 +48,6 @@ seeing_ = param ['atmosphere']['Seeing']
  
 rho = param['source']['radial_distance']
 theta = param['source']['deg']
-Lambda_ = param['source']['Lambda']
   
 value_F_excess_noise = param['wavefront_sensor']['value_for_F_excess_noise']
 F_excess_noise = np.sqrt(value_F_excess_noise)
@@ -89,7 +88,7 @@ gain_maximum = g_maximum_mapping.get(T_tot)
 gain_number = param['loop parameters']['gain_n']
 gain_ = np.linspace(gain_minimum, gain_maximum, gain_number)
 coeff_for_modulation_radius = param['loop parameters']['Coeff_Modulation_Radius']
-Modulation_Radius = coeff_for_modulation_radius * (Lambda_ / Telescope_diameter)
+Modulation_Radius = coeff_for_modulation_radius
 Maximum_Rad_Ord_Corr = param['loop parameters']['Maximum_Radial_Order_Corrected']
 
 fitting_coeff = param['coefficients']['fitting_coefficient']
@@ -121,7 +120,7 @@ var_fit = variance(omega_temporal_freqs, t_0, gain_, n1, n2, n3,
                    d1, d2, d3, "fitting", n_actuators, Telescope_diameter, Fried_param,
                    F_excess_noise, sky_background, dark_current, readout_noise, phot_flux,            
                    FrameRate, Magnitudo, n_subapert, CollectingArea,  x_pixel, fitting_coeff,
-                   alpha_, Lambda_, seeing_, Modulation_Radius, WindSpeed, Maximum_Rad_Ord_Corr,
+                   alpha_, seeing_, Modulation_Radius, WindSpeed, Maximum_Rad_Ord_Corr,
                    None, PSD_tur=None, PSD_vib=None, file_path_matrix_R=None) 
 
 
@@ -131,7 +130,7 @@ if np.array_equal(temporal_freqs, freq):
                                                              "temp",n_actuators, Telescope_diameter, Fried_param, 
                                                              F_excess_noise, sky_background, dark_current, 
                                                              readout_noise, phot_flux, FrameRate, Magnitudo, 
-                                                             n_subapert, CollectingArea, x_pixel, None, alpha_, Lambda_, seeing_, 
+                                                             n_subapert, CollectingArea, x_pixel, None, alpha_, seeing_, 
                                                              Modulation_Radius, WindSpeed, Maximum_Rad_Ord_Corr, 'H_r', 
                                                              PSD_tur=PSD_atmosf,  PSD_vib=PSD_wind_vib, file_path_matrix_R=None) 
     
@@ -143,7 +142,7 @@ else:
                                                              d1, d2, d3, "temp",n_actuators, Telescope_diameter, 
                                                              Fried_param, F_excess_noise, sky_background, dark_current, 
                                                              readout_noise, phot_flux, FrameRate, Magnitudo, 
-                                                             n_subapert, CollectingArea, x_pixel, None, alpha_, Lambda_, seeing_, 
+                                                             n_subapert, CollectingArea, x_pixel, None, alpha_, seeing_, 
                                                              Modulation_Radius, WindSpeed, Maximum_Rad_Ord_Corr, 'H_r', 
                                                              PSD_tur=PSD_atmosf, PSD_vib=PSD_wind_vib_interp_norm, 
                                                              file_path_matrix_R=None) 
@@ -157,7 +156,7 @@ var_alias, PSD_out_alias, PSD_in_alias, H_n_alias = variance(omega_temporal_freq
                                                              d1, d2, d3, "alias", n_actuators, Telescope_diameter, 
                                                              Fried_param, F_excess_noise, sky_background, dark_current, 
                                                              readout_noise, phot_flux, FrameRate, Magnitudo, 
-                                                             n_subapert, CollectingArea, x_pixel, None, alpha_, Lambda_, seeing_, 
+                                                             n_subapert, CollectingArea, x_pixel, None, alpha_, seeing_, 
                                                              Modulation_Radius, WindSpeed, Maximum_Rad_Ord_Corr, 'H_n', 
                                                              PSD_tur=None, PSD_vib=None, file_path_matrix_R=file_path_R1)
    
@@ -167,7 +166,7 @@ var_meas, PSD_out_meas, PSD_in_meas, H_n_meas = variance(omega_temporal_freqs, t
                                                          gain_, n1, n2, n3, d1, d2, d3, "meas", 
                                                          n_actuators, Telescope_diameter, Fried_param, F_excess_noise,
                                                          sky_background, dark_current, readout_noise, phot_flux, FrameRate, Magnitudo, 
-                                                         n_subapert, CollectingArea, x_pixel, None, alpha_, Lambda_, seeing_, 
+                                                         n_subapert, CollectingArea, x_pixel, None, alpha_, seeing_, 
                                                          Modulation_Radius, WindSpeed, Maximum_Rad_Ord_Corr, 'H_n', PSD_tur=None, 
                                                          PSD_vib=None, file_path_matrix_R=file_path_R1) 
 
@@ -178,7 +177,7 @@ var_total = total_variance(var_fit, var_temp, var_alias, var_meas)
 test(gain_minimum, gain_maximum, omega_temporal_freqs, t_0, n1, n2, 
      n3, d1, d2, d3, Telescope_diameter, Fried_param, F_excess_noise, 
      sky_background, dark_current, readout_noise, phot_flux, FrameRate, Magnitudo, 
-     n_subapert, CollectingArea, x_pixel, fitting_coeff, alpha_, Lambda_, seeing_, 
+     n_subapert, CollectingArea, x_pixel, fitting_coeff, alpha_, seeing_, 
      Modulation_Radius, WindSpeed, Maximum_Rad_Ord_Corr, file_path_R1, PSD_atmosf, 
      PSD_wind_vib)
 
@@ -190,11 +189,11 @@ plot(omega_temporal_freqs, H_r_temp, H_n_meas, H_n_alias, PSD_in_temp, PSD_out_t
 plot_all_PSD(omega_temporal_freqs, PSD_out_temp, PSD_out_meas, PSD_out_alias)
 
 
-check(file_path_R1, Lambda_, Telescope_diameter, seeing_, Modulation_Radius, 
+check(file_path_R1, Telescope_diameter, seeing_, Modulation_Radius, 
       n_actuators, alpha_, omega_temporal_freqs, WindSpeed, Maximum_Rad_Ord_Corr)
 
 
-plot_PSD_alias_mode_0(n_actuators, omega_temporal_freqs, alpha_,Lambda_, Telescope_diameter,
+plot_PSD_alias_mode_0(n_actuators, omega_temporal_freqs, alpha_, Telescope_diameter,
                      seeing_, Modulation_Radius, WindSpeed, Maximum_Rad_Ord_Corr,
                      file_path_R1)
 

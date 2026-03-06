@@ -29,8 +29,6 @@ source:
   #Polar coordinates in [arcsec, deg] of the source
   radial_distance: 0
   deg: 0
-  #Wavelenght in [nm]
-  Lambda: 530
 
 wavefront_sensor:
   # Number whose square root is taken to compute the ‘Excess noise factor’(F_excess_noise = np.sqrt(value_for_F_excess_noise)).
