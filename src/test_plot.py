@@ -238,7 +238,7 @@ def plot_PSD_alias_mode_0(actuators_number, omega_temp_freq_interval, alpha,lamb
                           seeing, modulation_radius, windspeed, maximum_radial_order_corrected,
                           file_path_matrix_R):
     
-    with fits.open("src/file_fits/modal_psd_aliasing.fits") as hdul:
+    with fits.open("src/file_fits/ANDES/modal_psd_aliasing.fits") as hdul:
         data = hdul[0].data 
         
         freq_hz = data[:, 0]

@@ -76,6 +76,7 @@ def funct_C (gain, omega_temp_freq_interval, t_0):
 # for adaptive optics systems with pyramid wavefront sensors", Agapito and Pinna, 2019)
 # through appropriate algebraic steps, allowing us to use np.polymul, np.polyadd,
 # and np.polyval to construct the numerator and denominator of H_r and H_n.
+# WFS = n1 / d1, Reconstructor and delay = n2 / d2, Controller = n3 / d3, and deformable Mirror = n4 / d4.
 
 def transfer_funct(n1, n2, n3, n4, d1, d2, d3, d4, Z, transfer_function_type):    
    
@@ -104,33 +105,28 @@ def transfer_funct(n1, n2, n3, n4, d1, d2, d3, d4, Z, transfer_function_type):
         raise ValueError("Transfer_function_type must be one of 'H_r' o 'H_n'")
 
 
-# Function to obtain the atmosferic PSD for tip and tilt modes
+# Function to obtain the atmospheric PSD for n_modes Zernike modes starting from tip (j=2).
+# Returns a 2D array of shape (n_modes, len(tempor_freqs)).
+# Default n_modes=2 reproduces the original tip-and-tilt behaviour.
 
-def main250724(rho, theta, aperture_radius, aperture_center, r0, L0, layers_altitude,
-               wind_speed, wind_direction, space_freqs, tempor_freqs):
+def turbulence_psd(rho, theta, aperture_radius, aperture_center, r0, L0, layers_altitude,
+                   wind_speed, wind_direction, space_freqs, tempor_freqs, n_modes=2):
 
-    source = GuideSource((rho, theta), np.inf)                                                                
+    source = GuideSource((rho, theta), np.inf)
     aperture = CircularOpticalAperture(aperture_radius, aperture_center)
     cn2_profile = Cn2Profile.from_r0s(r0, L0, layers_altitude, wind_speed, wind_direction)
-    
+
     vk = VonKarmanSpatioTemporalCovariance(
         source1=source, source2=source, aperture1=aperture, aperture2=aperture,
         cn2_profile=cn2_profile, spat_freqs=space_freqs)
-    
-    tip_psd = vk.getGeneralZernikeCPSD(j=2, k=2, temp_freqs=tempor_freqs)
-    tilt_psd = vk.getGeneralZernikeCPSD(j=3, k=3, temp_freqs=tempor_freqs)
 
-    #Alternatively, you can compute a modal matrix of temporal PSDs:   
-    modes = [2, 3, 4, 5, 6]
+    # Zernike indices: tip=2, tilt=3, focus=4, ...
+    modes = list(range(2, 2 + n_modes))
     modes_psd = vk.getGeneralZernikeCPSD(j=modes, k=modes, temp_freqs=tempor_freqs)
-    #The diagonal elements are the temporal PSDs of tip, tilt, focus, ast1, ast2:
-    tip_psd = modes_psd[0, 0, :]          
-    tilt_psd = modes_psd[1, 1, :]
-    #focus_psd = modes_psd[2, 2, :]
-    #ast1_psd = modes_psd[3, 3, :]
-    #ast2_psd = modes_psd[4, 4, :]
 
-    PSD_atmo = np.array([tip_psd, tilt_psd])                                   
+    # Diagonal elements give the temporal PSD of each mode
+    PSD_atmo = np.array([modes_psd[i, i, :] for i in range(n_modes)])
+
     return PSD_atmo
   
 
@@ -279,8 +275,13 @@ def extract_propagation_coefficients(file_path_matrix_R):
         
         try: 
             
-            R = hdul[1].data                       # pylint: disable=E1101     
-            return np.diag(R @ R.T)
+            R = np.array(hdul[1].data.copy())                # pylint: disable=E1101 
+            if R.ndim == 2:    
+                return np.diag(R @ R.T)
+            else:
+                # If the data is already a 1D array, we assume it's the diagonal of R @ R.T
+                # and return it directly
+                return R
 
         except Exception as exc:
             
@@ -294,11 +295,11 @@ def extract_propagation_coefficients(file_path_matrix_R):
 
 def build_optical_gain_grid():
     
-    with fits.open("src/file_fits/ANDES_og_mod0.fits") as hdul:
+    with fits.open("src/file_fits/ANDES/ANDES_og_mod0.fits") as hdul:
         data0 = hdul[0].data                                   # pylint: disable=E1101   
         optical_gain_mod_rad_0 = data0[:, -1]                 
  
-    with fits.open("src/file_fits/ANDES_og_mod4.fits") as hdul: 
+    with fits.open("src/file_fits/ANDES/ANDES_og_mod4.fits") as hdul: 
         data4 = hdul[0].data                                   # pylint: disable=E1101   
         optical_gain_mod_rad_4 = data4[:, -1]
 
@@ -341,7 +342,7 @@ def c_optical_gain (lambda_, telescope_diameter, seeing, modulation_radius):
 
 def read_sigma_slopes():
     
-    with fits.open("src/file_fits/slopes_rms_time_avg_all.fits") as hdul:
+    with fits.open("src/file_fits/ANDES/slopes_rms_time_avg_all.fits") as hdul:
         data = hdul[0].data                                              # pylint: disable=E1101   
         
         return data

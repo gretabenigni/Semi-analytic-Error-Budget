@@ -10,7 +10,7 @@ Created on Fri Nov 14 15:17:28 2025
 
 import numpy as np 
 
-from src.Functions import main250724
+from src.Functions import turbulence_psd
 from src.Functions import variance
 from src.Functions import funct_d2
 from src.Functions import total_variance
@@ -111,8 +111,8 @@ if (freq is None and PSD_wind_vib is None) or (freq is None or PSD_wind_vib is N
 
 print("PSD windshake and corresponding frequencies loaded successfully.")
 
-PSD_atmosf = main250724(rho, theta, aperture_radius, aperture_center, r0, L0, layers_altitude, 
-                        wind_speed, wind_direction, spatial_freqs, temporal_freqs)
+PSD_atmosf = turbulence_psd(rho, theta, aperture_radius, aperture_center, r0, L0, layers_altitude, 
+                            wind_speed, wind_direction, spatial_freqs, temporal_freqs)
 
 d2 = funct_d2 (T_tot)
 
