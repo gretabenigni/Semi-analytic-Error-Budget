@@ -343,6 +343,18 @@ def compute_andes_optical_gain(file_mod0, file_mod4,
     return interpolated_gain
 
 
+# Function to perform a 2D interpolation of the optical gain over modulation 
+# radius and seeing using RegularGridInterpolator
+
+def double_interpolation_optical_gain(modal_radius_val, seeing_val, optical_gain_grid, modulation_radius, seeing):
+   
+    interp_optical_gain = RegularGridInterpolator((modal_radius_val, seeing_val), optical_gain_grid, bounds_error=False, fill_value=None)  
+     
+    last_opt_gain = float(interp_optical_gain((modulation_radius, seeing)))
+    
+    return last_opt_gain
+
+
 # SOUL optical gain data is stored in a single FITS file as a 3D data cube,
 # with axes for modulated modes, binning, and magnitudes.
 
@@ -379,18 +391,6 @@ def compute_soul_optical_gain(filepath, target_mod_modes, target_binning, target
     
     interpolated_gain = float(interp_optical_gain((target_mod_modes, target_binning, target_magnitude)))
     return interpolated_gain
-
-
-# Function to perform a 2D interpolation of the optical gain over modulation 
-# radius and seeing using RegularGridInterpolator
-
-def double_interpolation_optical_gain(modal_radius_val, seeing_val, optical_gain_grid, modulation_radius, seeing):
-   
-    interp_optical_gain = RegularGridInterpolator((modal_radius_val, seeing_val), optical_gain_grid, bounds_error=False, fill_value=None)  
-     
-    last_opt_gain = float(interp_optical_gain((modulation_radius, seeing)))
-    
-    return last_opt_gain
 
 
 # Function to read and return the sigma slopes data from the FITS file.

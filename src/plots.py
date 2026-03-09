@@ -84,23 +84,20 @@ def variance_total_for_test(number_of_actuators, gain_value_, omega_temp_freq_in
 # Function to plot the total residual variance of the system as a function 
 # of the gain, considering only the first mode.
 
-def test(gain_min, gain_max, omega_temp_freq_interval, t_0, num1, num2, 
-         num3, den1, den2, den3, telescope_diameter, Fried_parameter, F_excess, 
-         sky_bkg, dark_curr, read_out_noise, photon_flux, frame_rate, magnitudo, 
-         n_subaperture, collecting_area, pixel_pos, fitting_coeff, alpha, seeing, 
-         modulation_radius, windspeed, maximum_radial_order_corrected,
-         file_path_reconstruction_matrix, file_optg, PSD_turbolence, PSD_vibration_wind): 
-   
-    do_test = input("Do you want to do the test? (y/n):") 
+def plot_total_variance_mode_0(gain_min, gain_max, omega_temp_freq_interval, t_0, num1, num2, 
+                               num3, den1, den2, den3, telescope_diameter, Fried_parameter, F_excess, 
+                               sky_bkg, dark_curr, read_out_noise, photon_flux, frame_rate, magnitudo, 
+                               n_subaperture, collecting_area, pixel_pos, fitting_coeff, alpha, seeing, 
+                               modulation_radius, windspeed, maximum_radial_order_corrected,
+                               file_path_reconstruction_matrix, file_optg, PSD_turbolence, PSD_vibration_wind): 
 
-    if do_test == "y":
        
-        print ('TEST') 
+    print ('TEST') 
      
-        actuators_number = 1                                                  
+    actuators_number = 1                                                  
      
-        gain_value = np.arange (gain_min, gain_max, 0.1)
-        variance_total = variance_total_for_test(actuators_number, gain_value, omega_temp_freq_interval,
+    gain_value = np.arange (gain_min, gain_max, 0.1)
+    variance_total = variance_total_for_test(actuators_number, gain_value, omega_temp_freq_interval,
                                                  t_0, num1, num2, num3, den1, den2, den3, telescope_diameter, 
                                                  Fried_parameter, F_excess, sky_bkg, dark_curr,read_out_noise, 
                                                  photon_flux, frame_rate, magnitudo, n_subaperture, collecting_area, 
@@ -109,12 +106,12 @@ def test(gain_min, gain_max, omega_temp_freq_interval, t_0, num1, num2,
                                                  file_path_reconstruction_matrix, file_optg,
                                                  PSD_turbolence, PSD_vibration_wind)
         
-        plt.plot(gain_value, variance_total, marker='o')    
-        plt.xlabel('Gain')
-        plt.ylabel('Total variance')
-        plt.title('Total variance as a function of the gain')
-        plt.grid()
-        plt.show()
+    plt.plot(gain_value, variance_total, marker='o')    
+    plt.xlabel('Gain')
+    plt.ylabel('Total variance')
+    plt.title('Total variance as a function of the gain')
+    plt.grid()
+    plt.show()
        
         
 # Defines a function that allows, when needed, to plot PSD_in, PSD_out, and the transfer 
@@ -122,60 +119,52 @@ def test(gain_min, gain_max, omega_temp_freq_interval, t_0, num1, num2,
 
 def plot(f, H_r_t, H_n_m, H_n_a, PSD_in_t, PSD_out_t, PSD_in_m, PSD_out_m, PSD_in_a, PSD_out_a):
     
-    do_plot = input("Do you want to plot PSD_in, PSD_out, and the transfer function? (y/n):")
-
-    if do_plot == "y":
-      
-        PSD_in = [PSD_in_t, PSD_in_m, PSD_in_a]                  
-        PSD_out = [PSD_out_t, PSD_out_m, PSD_out_a]              
-        H = [H_r_t, H_n_m, H_n_a]
+    PSD_in = [PSD_in_t, PSD_in_m, PSD_in_a]                  
+    PSD_out = [PSD_out_t, PSD_out_m, PSD_out_a]              
+    H = [H_r_t, H_n_m, H_n_a]
        
-        labels_PSD = ["temp", "meas","alias"]
-        labels_H = ["r", "n", "n"]
+    labels_PSD = ["temp", "meas","alias"]
+    labels_H = ["r", "n", "n"]
        
-        for i in range(len(PSD_in)):                                                           
+    for i in range(len(PSD_in)):                                                           
           
-            plt.loglog(f, PSD_in[i][0, :], label=f"PSD_in_{labels_PSD[i]} (mode 0)")       
-            plt.loglog(f, PSD_out[i][0, :], label=f"PSD_out_{labels_PSD[i]} (mode 0)")
-            plt.xlabel("Frequency [rad/s]")
-            plt.ylabel("PSD")
-            plt.title(f"PSD {labels_PSD[i]} (modo 0)")
-            plt.legend()
-            plt.grid()
-            plt.show()
+        plt.loglog(f, PSD_in[i][0, :], label=f"PSD_in_{labels_PSD[i]} (mode 0)")       
+        plt.loglog(f, PSD_out[i][0, :], label=f"PSD_out_{labels_PSD[i]} (mode 0)")
+        plt.xlabel("Frequency [rad/s]")
+        plt.ylabel("PSD")
+        plt.title(f"PSD {labels_PSD[i]} (modo 0)")
+        plt.legend()
+        plt.grid()
+        plt.show()
            
-            plt.loglog(f, np.abs(H[i][0, :])**2)     
-            plt.xlabel("Frequency [rad/s]")
-            plt.ylabel(f"|H_{labels_H[i]}|^2")
-            plt.title(f"Transfert function H_{labels_H[i]} (mode 0)")
-            plt.grid()
-            plt.show()
+        plt.loglog(f, np.abs(H[i][0, :])**2)     
+        plt.xlabel("Frequency [rad/s]")
+        plt.ylabel(f"|H_{labels_H[i]}|^2")
+        plt.title(f"Transfert function H_{labels_H[i]} (mode 0)")
+        plt.grid()
+        plt.show()
        
         
 # Function to plot the three output PSDs (temporal, measurement and aliasing)
 # for mode 0 on the same graph.
        
 def plot_all_PSD(f, PSD_out_t, PSD_out_m, PSD_out_a):
-    
-    do_plot = input("Do you want to plot all the PSD_out (mode 0)? (y/n):")
 
-    if do_plot == "y":
+    PSD_out = [PSD_out_t, PSD_out_m, PSD_out_a]
 
-        PSD_out = [PSD_out_t, PSD_out_m, PSD_out_a]
+    labels = ["temp", "meas", "alias"]
 
-        labels = ["temp", "meas", "alias"]
+    for i in range(len(PSD_out)):
 
-        for i in range(len(PSD_out)):
+        plt.loglog(f, PSD_out[i][0, :], label=f"PSD_out_{labels[i]} (mode 0)")
 
-            plt.loglog(f, PSD_out[i][0, :], label=f"PSD_out_{labels[i]} (mode 0)")
+    plt.xlabel("Frequency [rad/s]")
+    plt.ylabel("PSD")
+    plt.title(f"PSD {labels[i]} – mode 0")
+    plt.legend()
+    plt.grid()
 
-        plt.xlabel("Frequency [rad/s]")
-        plt.ylabel("PSD")
-        plt.title(f"PSD {labels[i]} – mode 0")
-        plt.legend()
-        plt.grid()
-
-        plt.show()
+    plt.show()
 
 
 # Function to verify the consistency of the aliasing variance calculation.

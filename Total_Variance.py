@@ -18,11 +18,11 @@ from src.Functions import interpolate_and_normalize_psd
 from src.Functions import load_parameters
 from src.Functions import load_PSD_windshake
 
-from src.test_plot import test
-from src.test_plot import plot_all_PSD
-from src.test_plot import check
-from src.test_plot import plot_PSD_alias_mode_0
-from src.test_plot import plot
+from src.plots import plot_total_variance_mode_0
+from src.plots import plot_all_PSD
+from src.plots import check
+from src.plots import plot_PSD_alias_mode_0
+from src.plots import plot
 
 param = load_parameters('params_mod4.yaml')
 
@@ -103,6 +103,10 @@ x_pixel = param['pixel_params']['pixel_position']
 
 file_optg = param['files']['file_optg']
 
+
+display = True
+
+
 freq, PSD_wind_vib = load_PSD_windshake(file_path_wind1)
 
 if (freq is None and PSD_wind_vib is None) or (freq is None or PSD_wind_vib is None):                                     
@@ -174,30 +178,31 @@ var_meas, PSD_out_meas, PSD_in_meas, H_n_meas = variance(omega_temporal_freqs, t
 
 var_total = total_variance(var_fit, var_temp, var_alias, var_meas)
 
+if display:
 
-test(gain_minimum, gain_maximum, omega_temporal_freqs, t_0, n1, n2, 
-     n3, d1, d2, d3, Telescope_diameter, Fried_param, F_excess_noise, 
-     sky_background, dark_current, readout_noise, phot_flux, FrameRate, Magnitudo, 
-     n_subapert, CollectingArea, x_pixel, fitting_coeff, alpha_, seeing_, 
-     Modulation_Radius, WindSpeed, Maximum_Rad_Ord_Corr, file_path_R1, file_optg,
-     PSD_atmosf, PSD_wind_vib)
+    plot_total_variance_mode_0(gain_minimum, gain_maximum, omega_temporal_freqs, t_0, n1, n2, 
+                           n3, d1, d2, d3, Telescope_diameter, Fried_param, F_excess_noise, 
+                           sky_background, dark_current, readout_noise, phot_flux, FrameRate, Magnitudo, 
+                           n_subapert, CollectingArea, x_pixel, fitting_coeff, alpha_, seeing_, 
+                           Modulation_Radius, WindSpeed, Maximum_Rad_Ord_Corr, file_path_R1, file_optg,
+                           PSD_atmosf, PSD_wind_vib)
 
 
-plot(omega_temporal_freqs, H_r_temp, H_n_meas, H_n_alias, PSD_in_temp, PSD_out_temp,
-     PSD_in_meas, PSD_out_meas, PSD_in_alias, PSD_out_alias)
+    plot(omega_temporal_freqs, H_r_temp, H_n_meas, H_n_alias, PSD_in_temp, PSD_out_temp,
+         PSD_in_meas, PSD_out_meas, PSD_in_alias, PSD_out_alias)
        
 
-plot_all_PSD(omega_temporal_freqs, PSD_out_temp, PSD_out_meas, PSD_out_alias)
+    plot_all_PSD(omega_temporal_freqs, PSD_out_temp, PSD_out_meas, PSD_out_alias)
 
 
-check(file_path_R1, Telescope_diameter, seeing_, Modulation_Radius, 
-      n_actuators, alpha_, omega_temporal_freqs, WindSpeed, Maximum_Rad_Ord_Corr,
-      file_optg, system="ANDES")
+    check(file_path_R1, Telescope_diameter, seeing_, Modulation_Radius, 
+          n_actuators, alpha_, omega_temporal_freqs, WindSpeed, Maximum_Rad_Ord_Corr,
+          file_optg, system="ANDES")
 
 
-plot_PSD_alias_mode_0(n_actuators, omega_temporal_freqs, alpha_, Telescope_diameter,
-                     seeing_, Modulation_Radius, WindSpeed, Maximum_Rad_Ord_Corr,
-                     file_path_R1, file_optg, system="ANDES")
+    plot_PSD_alias_mode_0(n_actuators, omega_temporal_freqs, alpha_, Telescope_diameter,
+                          seeing_, Modulation_Radius, WindSpeed, Maximum_Rad_Ord_Corr,
+                          file_path_R1, file_optg, system="ANDES")
 
 
 
