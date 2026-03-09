@@ -76,7 +76,7 @@ def funct_C (gain, omega_temp_freq_interval, t_0):
 # for adaptive optics systems with pyramid wavefront sensors", Agapito and Pinna, 2019)
 # through appropriate algebraic steps, allowing us to use np.polymul, np.polyadd,
 # and np.polyval to construct the numerator and denominator of H_r and H_n.
-# WFS = n1 / d1, Reconstructor and delay = n2 / d2, Controller = n3 / d3, and deformable Mirror = n4 / d4.
+# WFS = n1 / d1, Reconstructor and delay = n2 / d2, deformable Mirror = n3 / d3 and Controller = n4 / d4.
 
 def transfer_funct(n1, n2, n3, n4, d1, d2, d3, d4, Z, transfer_function_type):    
    
