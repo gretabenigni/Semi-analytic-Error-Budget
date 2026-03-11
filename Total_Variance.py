@@ -17,14 +17,12 @@ from src.Functions import interpolate_and_normalize_psd
 from src.Functions import load_parameters
 from src.Functions import load_PSD_windshake
 
-###############
 from src.Functions import fitting_variance
 from src.Functions import compute_andes_optical_gain
 from src.Functions import build_transfer_function
 from src.Functions import temporal_variance
 from src.Functions import aliasing_variance
 from src.Functions import measure_variance
-##################
 
 from src.plots import plot_total_variance_mode_0
 from src.plots import plot_all_PSD
@@ -130,68 +128,6 @@ PSD_atmosf = turbulence_psd(rho, theta, aperture_radius, aperture_center, r0, L0
 d2 = funct_d2 (T_tot)
 
 
-# var_fit = variance(omega_temporal_freqs, t_0, gain_, n1, n2, n3,
-#                    d1, d2, d3, "fitting", n_actuators, Telescope_diameter, Fried_param,
-#                    F_excess_noise, sky_background, dark_current, readout_noise, phot_flux,            
-#                    FrameRate, Magnitudo, n_subapert, CollectingArea,  x_pixel, fitting_coeff,
-#                    alpha_, seeing_, Modulation_Radius, WindSpeed, Maximum_Rad_Ord_Corr,
-#                    None, file_optg, PSD_tur=None, PSD_vib=None, file_path_matrix_R=None) 
-
-
-# if np.array_equal(temporal_freqs, freq): 
-    
-#     var_temp, PSD_out_temp, PSD_in_temp, H_r_temp = variance(omega_temporal_freqs, t_0,gain_, n1, n2, n3, d1, d2, d3, 
-#                                                              "temp",n_actuators, Telescope_diameter, Fried_param, 
-#                                                              F_excess_noise, sky_background, dark_current, 
-#                                                              readout_noise, phot_flux, FrameRate, Magnitudo, 
-#                                                              n_subapert, CollectingArea, x_pixel, None, alpha_, seeing_, 
-#                                                              Modulation_Radius, WindSpeed, Maximum_Rad_Ord_Corr, 'H_r', file_optg,
-#                                                              PSD_tur=PSD_atmosf,  PSD_vib=PSD_wind_vib, file_path_matrix_R=None) 
-    
-# else:
-    
-#     PSD_wind_vib_interp_norm = interpolate_and_normalize_psd(temporal_freqs, freq, PSD_wind_vib, n_actuators)
-#     #print (PSD_wind_vib_interp_norm)
-#     var_temp, PSD_out_temp, PSD_in_temp, H_r_temp = variance(omega_temporal_freqs, t_0, gain_, n1, n2, n3, 
-#                                                              d1, d2, d3, "temp",n_actuators, Telescope_diameter, 
-#                                                              Fried_param, F_excess_noise, sky_background, dark_current, 
-#                                                              readout_noise, phot_flux, FrameRate, Magnitudo, 
-#                                                              n_subapert, CollectingArea, x_pixel, None, alpha_, seeing_, 
-#                                                              Modulation_Radius, WindSpeed, Maximum_Rad_Ord_Corr, 'H_r', file_optg,
-#                                                              PSD_tur=PSD_atmosf, PSD_vib=PSD_wind_vib_interp_norm, 
-#                                                              file_path_matrix_R=None) 
-  
-
-
-
-
-    
-# var_alias, PSD_out_alias, PSD_in_alias, H_n_alias = variance(omega_temporal_freqs, t_0, gain_,n1, n2, n3, 
-#                                                              d1, d2, d3, "alias", n_actuators, Telescope_diameter, 
-#                                                              Fried_param, F_excess_noise, sky_background, dark_current, 
-#                                                              readout_noise, phot_flux, FrameRate, Magnitudo, 
-#                                                              n_subapert, CollectingArea, x_pixel, None, alpha_, seeing_, 
-#                                                              Modulation_Radius, WindSpeed, Maximum_Rad_Ord_Corr, 'H_n', file_optg,
-#                                                              PSD_tur=None, PSD_vib=None, file_path_matrix_R=file_path_R1)
-   
-
-        
-# var_meas, PSD_out_meas, PSD_in_meas, H_n_meas = variance(omega_temporal_freqs, t_0,
-#                                                          gain_, n1, n2, n3, d1, d2, d3, "meas", 
-#                                                          n_actuators, Telescope_diameter, Fried_param, F_excess_noise,
-#                                                          sky_background, dark_current, readout_noise, phot_flux, FrameRate, Magnitudo, 
-#                                                          n_subapert, CollectingArea, x_pixel, None, alpha_, seeing_, 
-#                                                          Modulation_Radius, WindSpeed, Maximum_Rad_Ord_Corr, 'H_n', file_optg,
-#                                                          PSD_tur=None, PSD_vib=None, file_path_matrix_R=file_path_R1) 
-
-
-
-##################################
-# FARE: 1) Va sistemata plot_total_variance_mode_0
-#      
-#################################
-
-
 if system == "ANDES":
     
     c_optg = compute_andes_optical_gain(file_optg[0], file_optg[1], seeing_, Modulation_Radius)
@@ -199,8 +135,6 @@ if system == "ANDES":
 H_r_temp = build_transfer_function(gain_, omega_temporal_freqs, t_0, n_actuators, n1, n2, n3,d1, d2, d3,"H_r")
 H_n_meas = build_transfer_function(gain_, omega_temporal_freqs, t_0, n_actuators, n1, n2, n3,d1, d2, d3,"H_n")
 H_n_alias = build_transfer_function(gain_, omega_temporal_freqs, t_0, n_actuators, n1, n2, n3,d1, d2, d3,"H_n")
-
-
 
 
 var_fit = fitting_variance(fitting_coeff, n_actuators, Telescope_diameter, Fried_param) 
@@ -216,13 +150,9 @@ else:
     var_temp, PSD_out_temp, PSD_in_temp = temporal_variance (PSD_atmosf, PSD_wind_vib_interp_norm, H_r_temp, n_actuators, omega_temporal_freqs)
 
 
-
 var_alias, PSD_out_alias, PSD_in_alias = aliasing_variance(H_n_alias, n_actuators, omega_temporal_freqs, 
                                                   alpha_, Telescope_diameter, seeing_, Modulation_Radius, WindSpeed, 
                                                   Maximum_Rad_Ord_Corr, file_path_R1, c_optg)
-
-
-
 
 
 var_meas, PSD_out_meas, PSD_in_meas  = measure_variance (F_excess_noise, x_pixel, sky_background, dark_current, readout_noise,
@@ -230,15 +160,11 @@ var_meas, PSD_out_meas, PSD_in_meas  = measure_variance (F_excess_noise, x_pixel
                                                   CollectingArea, file_path_R1, omega_temporal_freqs, 
                                                   H_n_meas, n_actuators)
 
-
-
-
-########################################
-
-
-
-
 var_total = total_variance(var_fit, var_temp, var_alias, var_meas)
+
+
+##### PLOTS AND CHECKS
+
 
 if display:
 
