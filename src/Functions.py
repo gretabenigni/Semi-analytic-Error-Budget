@@ -307,10 +307,10 @@ def _load_andes_gain_grid(file_mod0, file_mod4):
     Loads and stacks the ANDES optical gain data from two separate FITS files.
     """
     with fits.open(file_mod0) as hdul:
-        gain_mod0 = hdul[0].data[:, -1]
+        gain_mod0 = hdul[0].data[:, -1]                # pylint: disable=E1101 
         
     with fits.open(file_mod4) as hdul:
-        gain_mod4 = hdul[0].data[:, -1]
+        gain_mod4 = hdul[0].data[:, -1]                 # pylint: disable=E1101 
         
     return np.vstack([gain_mod0, gain_mod4])
 
@@ -363,10 +363,10 @@ def _load_soul_gain_cube(filepath):
     Loads the SOUL optical gain data cube and its axes from a single FITS file.
     """
     with fits.open(filepath) as hdul:
-        magnitudes = hdul[1].data     # Shape: (11,)
-        binning = hdul[2].data        # Shape: (4,)
-        mod_modes = hdul[3].data      # Shape: (6,)
-        gain_cube = hdul[4].data      # Shape: (6, 4, 11)
+        magnitudes = hdul[1].data     # Shape: (11,)               # pylint: disable=E1101 
+        binning = hdul[2].data        # Shape: (4,)                # pylint: disable=E1101 
+        mod_modes = hdul[3].data      # Shape: (6,)                # pylint: disable=E1101 
+        gain_cube = hdul[4].data      # Shape: (6, 4, 11)          # pylint: disable=E1101 
         
     return mod_modes, binning, magnitudes, gain_cube
 

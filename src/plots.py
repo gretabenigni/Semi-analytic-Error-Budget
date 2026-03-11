@@ -178,6 +178,8 @@ def check(file_path_matrix_R, telescope_diameter, seeing, modulation_radius,
           actuators_number, alpha, omega_temp_freq_interval, windspeed, 
           maximum_radial_order_corrected,file_optg, system="ANDES"):
     
+    c_optg = 0
+    
     if system == "ANDES":
         c_optg = compute_andes_optical_gain(file_optg[0], file_optg[1], seeing, modulation_radius)
     # TODO not supported yet
@@ -234,13 +236,16 @@ def plot_PSD_alias_mode_0(actuators_number, omega_temp_freq_interval, alpha, tel
                           seeing, modulation_radius, windspeed, maximum_radial_order_corrected,
                           file_path_matrix_R, file_optg, system="ANDES"):
     
-    with fits.open("src/file_fits/ANDES/modal_psd_aliasing.fits") as hdul:
-        data = hdul[0].data 
+    with fits.open("src/file_fits/ANDES/modal_psd_aliasing.fits") as hdul:          
+        data = hdul[0].data                                                    # pylint: disable=E1101
         
         freq_hz = data[:, 0]
         mode_0 = data[:, 1]
         
         freq_rad_s = 2 * np.pi * freq_hz
+        
+        c_optg = 0
+        
         if system == "ANDES":
             c_optg = compute_andes_optical_gain(file_optg[0], file_optg[1], seeing, modulation_radius)
         # TODO not supported yet

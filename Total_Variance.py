@@ -127,6 +127,7 @@ PSD_atmosf = turbulence_psd(rho, theta, aperture_radius, aperture_center, r0, L0
 
 d2 = funct_d2 (T_tot)
 
+c_optg = 0
 
 if system == "ANDES":
     
