@@ -280,7 +280,6 @@ def extract_propagation_coefficients(file_path_matrix_R):
             else:
                 h = hdul[0]
             R = np.array(h.data.copy())                # pylint: disable=E1101
-            print("Shape of R:", R.shape)
             if R.ndim == 2:    
                 return np.diag(R @ R.T)
             else:
@@ -572,7 +571,7 @@ def compute_slope_noise_variance(F_excess, pixel_pos, sky_bkg, dark_curr, read_o
                                           n_subaperture, collecting_area)
     
     pixel_pos = np.array(pixel_pos)                                            
-    pixel_variance = F_excess ** 2 * (n_phot_pix + sky_bkg + dark_curr) + read_out_noise
+    pixel_variance = F_excess ** 2 * (n_phot_pix + sky_bkg + dark_curr) + read_out_noise**2
     pix_intensity = n_phot_pix
     slope_variance = np.sum((pixel_pos ** 2) * pixel_variance) / (4 * (pix_intensity)) ** 2   
    
