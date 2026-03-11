@@ -109,3 +109,7 @@ pixel_params:
   # Pixel position 
   pixel_position:  [1, 0, 0, 0]     
   
+
+system definition:
+  #ANDES or SOUL
+  System: "ANDES"
