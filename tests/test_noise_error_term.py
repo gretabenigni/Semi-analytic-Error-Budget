@@ -41,7 +41,7 @@ simulation-based propagation matrix).  Both should however report noise WFE
 values within one order of magnitude for compatible 8 m Pyramid parameters.
 
 Run from the Semi-analytic-Error-Budget root with:
-    python -m pytest tests/test_error_terms.py -v -s
+    python -m pytest tests/test_noise_error_term.py -v -s
 """
 
 import os
