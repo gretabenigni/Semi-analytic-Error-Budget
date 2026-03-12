@@ -121,7 +121,7 @@ if (freq is None and PSD_wind_vib is None) or (freq is None or PSD_wind_vib is N
 print("PSD windshake and corresponding frequencies loaded successfully.")
 
 PSD_atmosf = turbulence_psd(rho, theta, aperture_radius, aperture_center, Fried_param, L0, layers_altitude, 
-                            WindSpeed, wind_direction, spatial_freqs, temporal_freqs, n_modes=2)
+                            WindSpeed, wind_direction, spatial_freqs, temporal_freqs)
 
 d2 = funct_d2 (T_tot)
 
