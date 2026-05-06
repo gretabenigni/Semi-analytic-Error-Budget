@@ -339,17 +339,17 @@ if display:
           n_actuators, alpha_, omega_temporal_freqs, wind_speed, maximum_radial_order,
           magnitude, c_optg, file_sigma_slope)
     
-
-    # plot_PSD_alias_mode_0(n_actuators, omega_temporal_freqs, alpha_, telescope_diameter,
-    #                       seeing, modulation_radius, wind_speed, maximum_radial_order,
-    #                       bin_value, magnitude, file_path_R1, c_optg, file_sigma_slope, 
-    #                       file_modal_psd_alias_path) 
-    #                       ####### con bin_value (usando cubo per soul)
-    
-    plot_PSD_alias_mode_0(n_actuators, omega_temporal_freqs, alpha_, telescope_diameter,
-                          seeing, modulation_radius, wind_speed, maximum_radial_order,
-                          magnitude, file_path_R1, c_optg, file_sigma_slope, 
-                          file_modal_psd_alias_path)
+    if system == "ANDES":
+        # plot_PSD_alias_mode_0(n_actuators, omega_temporal_freqs, alpha_, telescope_diameter,
+        #                       seeing, modulation_radius, wind_speed, maximum_radial_order,
+        #                       bin_value, magnitude, file_path_R1, c_optg, file_sigma_slope, 
+        #                       file_modal_psd_alias_path) 
+        #                       ####### con bin_value (usando cubo per soul)
+        
+        plot_PSD_alias_mode_0(n_actuators, omega_temporal_freqs, alpha_, telescope_diameter,
+                              seeing, modulation_radius, wind_speed, maximum_radial_order,
+                              magnitude, file_path_R1, c_optg, file_sigma_slope, 
+                              file_modal_psd_alias_path)
 
 
     plot_PSD_OL_CL_mode_0(gain_, omega_temporal_freqs, t_0, n_actuators, n1, n2, n3, d1, d2, d3,
@@ -357,10 +357,27 @@ if display:
                           maximum_radial_order, c_optg, F_excess_noise, x_pixel, sky_background, dark_current, readout_noise, 
                           phot_flux, frame_rate, magnitude, n_subapert, collecting_area, temporal_freqs, freq, 
                           file_path_R1, file_sigma_slope)
+    
+    if system == "SOUL":
 
-
-    if file_optg_cube is None:
-        file_optg_cube = "src/file_fits/LBT/SOUL_OPTG.fits"
-
-    optg_soul_comparison (file_optg_cube, bin_value, magnitude, n_actuators, 
-                          file_optg[0], file_optg[1], seeing, modulation_radius)
+        if file_optg_cube is None:
+            file_optg_cube = "src/file_fits/LBT/SOUL_OPTG.fits"
+    
+        optg_soul_comparison (file_optg_cube, bin_value, magnitude, n_actuators, 
+                              file_optg[0], file_optg[1], seeing, modulation_radius)
+        
+        
+        
+      
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    

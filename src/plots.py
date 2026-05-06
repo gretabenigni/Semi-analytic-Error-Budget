@@ -730,23 +730,34 @@ def plot_psd_vibr_soul (file_path_wind):
 
 def optg_soul_comparison (file_soul_optical_gain_cube, target_binning, 
                           target_magnitude, actuators_number, file_mod0, 
-                          file_mod3, target_seeing, target_modulation_radius):   
+                          file_mod1, target_seeing, target_modulation_radius):   
     
     
-    optg_1 = final_soul_optical_gain(file_soul_optical_gain_cube, target_binning, 
-                                       target_magnitude, actuators_number)
+    optg_cube = final_soul_optical_gain(file_soul_optical_gain_cube, target_binning, 
+                                     target_magnitude, actuators_number)
     
-    optg_2 = compute_optical_gain(file_mod0, file_mod3, target_seeing, target_modulation_radius, 
+    optg_grid = compute_optical_gain(file_mod0, file_mod1, target_seeing, target_modulation_radius, 
                                   actuators_number)
     
     n_modes = np.arange(actuators_number)
 
-    plt.plot(n_modes, optg_1, label = "Optical gain version 1")
-    plt.plot(n_modes, optg_2, label = "Optical gain version 2")
+    plt.plot(n_modes, optg_cube, label = "Optical gain with cube")
+    plt.plot(n_modes, optg_grid, label = "Optical gain with grid")
     plt.xlabel('Modes')
     plt.ylabel('Gain')
     plt.title('OPTG Version 1 vs 2')
     plt.grid()
     plt.legend()
     plt.show()
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 
