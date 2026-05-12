@@ -9,7 +9,6 @@ Created on Fri Nov 14 15:17:28 2025
 # pylint: disable=C
 
 import numpy as np
-import matplotlib.pyplot as plt
 
 from src.Functions import seeing_to_r0
 from src.Functions import turbulence_psd
@@ -32,29 +31,17 @@ from src.Functions import compute_optical_gain
 from src.Functions import final_soul_optical_gain
 
 from src.plots import plot_gain_optimization_sweep
-from src.plots import plot_all_PSD
-from src.plots import check
-from src.plots import plot_PSD_alias_mode_0
-from src.plots import plot
-from src.plots import plot_PSD_OL_CL_mode_0
-from src.plots import plot_psd_vibr_soul
-from src.plots import optg_soul_comparison
+# from src.plots import plot_all_PSD
+# from src.plots import check
+# from src.plots import plot_PSD_alias_mode_0
+# from src.plots import plot
+# from src.plots import plot_PSD_OL_CL_mode_0
+# from src.plots import plot_psd_vibr_soul
+# from src.plots import optg_soul_comparison
 from src.plots import plot_variance_vs_modes
 
-system = "SOUL"
 
-if system == "ANDES":
-
-    param = load_parameters('params_ANDES.yaml')
-
-elif system =="SOUL":
-    
-    param = load_parameters('params_SOUL.yaml')
-      
-else:
-    
-    raise RuntimeError("system must be 'ANDES' or 'SOUL'") 
-
+param = load_parameters('params_Total_variance_SOUL.yaml')
 
 print("Parameters loaded successfully.")
   
@@ -70,10 +57,8 @@ wind_speed = param['atmosphere']['wind_speed']
 seeing = param['atmosphere']['seeing']
 fried_param = seeing_to_r0(seeing)
 
-
 rho = 0
 theta = 0
-
 
 value_F_excess_noise = param['wavefront_sensor']['value_for_F_excess_noise']
 F_excess_noise = np.sqrt(value_F_excess_noise)
@@ -124,12 +109,7 @@ bin_value = param['control']['bin']
  
 modulation_radius = param['wavefront_sensor']['modulation_radius']
 # here we do not use n_actuators because it can be reduced to analyse the error on a small number of modes.
-if system == "ANDES":
-    maximum_radial_order = 88
-elif system == "SOUL":
-    maximum_radial_order = 35
-else:
-    maximum_radial_order = radial_order_from_n_modes(n_actuators)
+maximum_radial_order = 35
  
 fitting_coeff = 0.2778
 alpha_ = -17/3
@@ -354,64 +334,66 @@ var_total_OL = total_variance(var_fit, var_temp_OL, var_alias_OL, var_meas_OL, v
 print ("CLOSED LOOP TOTAL VARIANCE:")
 var_total_CL = total_variance(var_fit, var_temp_CL, var_alias_CL, var_meas_CL, verbose=True)
 
-##### PLOTS AND CHECKS
+# =============================================================================
+# PLOTS AND CHECKS
+# =============================================================================
 
 if display:
     
     plot_variance_vs_modes(PSD_out_temp, PSD_out_vibr, PSD_out_alias, PSD_out_meas,
                            var_fit, omega_temporal_freqs, n_actuators)
-
+    
     # 1. Plot Gain Sweep Optimization
     if gain_number == 1:
         if n_actuators <= 2:
             plot_gain_optimization_sweep(gain_vals_TT, var_TT)
         else:
             plot_gain_optimization_sweep(gain_vals_TT, var_TT, gain_vals_HO, var_HO)
-
-    plot_psd_vibr_soul (file_path_wind)
-
-    plot(omega_temporal_freqs, H_r_temp, H_n_meas, H_n_alias, PSD_in_vibr, PSD_out_vibr, PSD_in_temp, PSD_out_temp,
-         PSD_in_meas, PSD_out_meas, PSD_in_alias, PSD_out_alias)
+    
+    # plot_psd_vibr_soul (file_path_wind)
+    
+    # plot(omega_temporal_freqs, H_r_temp, H_n_meas, H_n_alias, PSD_in_vibr, PSD_out_vibr, PSD_in_temp, PSD_out_temp,
+    #      PSD_in_meas, PSD_out_meas, PSD_in_alias, PSD_out_alias)
                                
-
-    plot_all_PSD(omega_temporal_freqs, PSD_out_temp, PSD_out_meas, PSD_out_alias)
-
-
+    
+    # plot_all_PSD(omega_temporal_freqs, PSD_out_temp, PSD_out_meas, PSD_out_alias)
+    
+    
+    # # check(file_path_R1, telescope_diameter, seeing, modulation_radius,
+    # #       n_actuators, alpha_, omega_temporal_freqs, wind_speed, maximum_radial_order,
+    # #       magnitude, bin_value, c_optg, file_sigma_slope)
+    # #       ####### con bin_value (usando cubo per soul)
+    
     # check(file_path_R1, telescope_diameter, seeing, modulation_radius,
     #       n_actuators, alpha_, omega_temporal_freqs, wind_speed, maximum_radial_order,
-    #       magnitude, bin_value, c_optg, file_sigma_slope)
-    #       ####### con bin_value (usando cubo per soul)
+    #       magnitude, c_optg, file_sigma_slope)
     
-    check(file_path_R1, telescope_diameter, seeing, modulation_radius,
-          n_actuators, alpha_, omega_temporal_freqs, wind_speed, maximum_radial_order,
-          magnitude, c_optg, file_sigma_slope)
-    
-    if system == "ANDES":
-        # plot_PSD_alias_mode_0(n_actuators, omega_temporal_freqs, alpha_, telescope_diameter,
-        #                       seeing, modulation_radius, wind_speed, maximum_radial_order,
-        #                       bin_value, magnitude, file_path_R1, c_optg, file_sigma_slope, 
-        #                       file_modal_psd_alias_path) 
-        #                       ####### con bin_value (usando cubo per soul)
+    # if system == "ANDES":
+    #     # plot_PSD_alias_mode_0(n_actuators, omega_temporal_freqs, alpha_, telescope_diameter,
+    #     #                       seeing, modulation_radius, wind_speed, maximum_radial_order,
+    #     #                       bin_value, magnitude, file_path_R1, c_optg, file_sigma_slope, 
+    #     #                       file_modal_psd_alias_path) 
+    #     #                       ####### con bin_value (usando cubo per soul)
         
-        plot_PSD_alias_mode_0(n_actuators, omega_temporal_freqs, alpha_, telescope_diameter,
-                              seeing, modulation_radius, wind_speed, maximum_radial_order,
-                              magnitude, file_path_R1, c_optg, file_sigma_slope, 
-                              file_modal_psd_alias_path)
-
-
-    plot_PSD_OL_CL_mode_0(gain_, omega_temporal_freqs, t_0, n_actuators, n1, n2, n3, d1, d2, d3,
-                          PSD_atmosf, PSD_wind_vib, alpha_, telescope_diameter, seeing, modulation_radius, wind_speed, 
-                          maximum_radial_order, c_optg, F_excess_noise, x_pixel, sky_background, dark_current, readout_noise, 
-                          phot_flux, frame_rate, magnitude, n_subapert, collecting_area, temporal_freqs, freq, 
-                          file_path_R1, file_sigma_slope)
+    #     plot_PSD_alias_mode_0(n_actuators, omega_temporal_freqs, alpha_, telescope_diameter,
+    #                           seeing, modulation_radius, wind_speed, maximum_radial_order,
+    #                           magnitude, file_path_R1, c_optg, file_sigma_slope, 
+    #                           file_modal_psd_alias_path)
     
-    if system == "SOUL":
-
-        if file_optg_cube is None:
-            file_optg_cube = "src/file_fits/LBT/SOUL_OPTG.fits"
     
-        optg_soul_comparison (file_optg_cube, bin_value, magnitude, n_actuators, 
-                              file_optg[0], file_optg[1], seeing, modulation_radius)
+    # plot_PSD_OL_CL_mode_0(gain_, omega_temporal_freqs, t_0, n_actuators, n1, n2, n3, d1, d2, d3,
+    #                       PSD_atmosf, PSD_wind_vib, alpha_, telescope_diameter, seeing, modulation_radius, wind_speed, 
+    #                       maximum_radial_order, c_optg, F_excess_noise, x_pixel, sky_background, dark_current, readout_noise, 
+    #                       phot_flux, frame_rate, magnitude, n_subapert, collecting_area, temporal_freqs, freq, 
+    #                       file_path_R1, file_sigma_slope)
+    
+    # if system == "SOUL":
+    
+    #     if file_optg_cube is None:
+    #         file_optg_cube = "src/file_fits/LBT/SOUL_OPTG.fits"
+    
+    #     optg_soul_comparison (file_optg_cube, bin_value, magnitude, n_actuators, 
+    #                           file_optg[0], file_optg[1], seeing, modulation_radius)
         
         
         
@@ -419,12 +401,12 @@ if display:
     
     
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+

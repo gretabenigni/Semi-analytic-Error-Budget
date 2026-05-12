@@ -30,12 +30,13 @@ from src.Functions import interpolate_and_normalize_psd
 from src.Functions import align_psd_modes
 from src.Functions import final_soul_optical_gain
 from src.Functions import compute_optical_gain
+from src.Functions import _integrate_modal_psd
 
 
 # Function to compute the total residual variance for a set of gain values,
 # by combining fitting, temporal, aliasing and measurement error contributions 
   
-def variance_total_for_test(number_of_actuators, gain_values, omega_temp_freq_interval, t_freqs, f,
+def variance_total_for_test(actuators_number, gain_values, omega_temp_freq_interval, t_freqs, f,
                             t_0, plant_num, plant_den, telescope_diameter, fried_parameter,
                             excess_noise_factor, sky_background, dark_current, readout_noise,
                             photon_flux, frame_rate, magnitude, n_subaperture, collecting_area,
@@ -56,7 +57,7 @@ def variance_total_for_test(number_of_actuators, gain_values, omega_temp_freq_in
         H_r_temp, H_n_meas = build_transfer_function(
             omega_temp_freq_interval,
             t_0,
-            number_of_actuators,
+            actuators_number,
             plant_num,
             plant_den,
             gain=gain_val,
@@ -64,26 +65,26 @@ def variance_total_for_test(number_of_actuators, gain_values, omega_temp_freq_in
         H_n_alias = H_n_meas
         
         
-        variance_fit = fitting_variance(fitting_coeff, number_of_actuators, telescope_diameter, fried_parameter)
+        variance_fit = fitting_variance(fitting_coeff, actuators_number, telescope_diameter, fried_parameter)
         
          
         if np.array_equal(t_freqs, f): 
             
-            _, variance_temporal,_ , _ = temporal_variance(psd_turbulence, psd_windshake, H_r_temp, number_of_actuators,
+            _, variance_temporal,_ , _ = temporal_variance(psd_turbulence, psd_windshake, H_r_temp, actuators_number,
                                                               omega_temp_freq_interval)
 
         else: 
             
-            PSD_wind_vib_interp_norm = interpolate_and_normalize_psd(t_freqs, f, psd_windshake, number_of_actuators)
+            PSD_wind_vib_interp_norm = interpolate_and_normalize_psd(t_freqs, f, psd_windshake, actuators_number)
             _, variance_temporal,_ , _ = temporal_variance(psd_turbulence, PSD_wind_vib_interp_norm,
-                                                           H_r_temp, number_of_actuators, omega_temp_freq_interval)
+                                                           H_r_temp, actuators_number, omega_temp_freq_interval)
 
         
         
         
         _, variance_aliasing, _, _ = aliasing_variance(
             transf_funct=H_n_alias,
-            actuators_number=number_of_actuators,
+            actuators_number=actuators_number,
             omega_temp_freq_interval=omega_temp_freq_interval,
             c_optg=gain_val,
             alpha=alpha,
@@ -110,18 +111,16 @@ def variance_total_for_test(number_of_actuators, gain_values, omega_temp_freq_in
             collecting_area,
             reconstruction_matrix_path,
             H_n_meas,
-            number_of_actuators,
+            actuators_number,
             omega_temp_freq_interval,
             gain_val,
         )
        
-        
-        print ("CLOSED LOOP:")
         tot_variance[i] = total_variance(np.real(variance_fit), np.real(variance_temporal), 
                                          np.real(variance_aliasing), np.real(variance_measurement))            
     
     return tot_variance
-       
+
         
 # Defines a function that allows, when needed, to plot PSD_in, PSD_out, and the transfer 
 # function for the variances (temp, alias, meas)
@@ -476,6 +475,7 @@ def check(reconstruction_matrix_path, telescope_diameter, seeing, target_modulat
           maximum_radial_order_corrected, magnitudo, c_optg, 
           file_path_sigma_slopes):
 
+    print("\nALIASING VARIANCE CHECK (check):\n")
     
     p_coefficient = extract_propagation_coefficients(reconstruction_matrix_path)
     
@@ -498,7 +498,7 @@ def check(reconstruction_matrix_path, telescope_diameter, seeing, target_modulat
         
         sigma_alias_2_two_modes += sigma_alias_2
         
-    print("ALIASING VARIANCE (OPEN LOOP):", sigma_alias_2_two_modes)
+    print("\nALIASING VARIANCE (OPEN LOOP):", sigma_alias_2_two_modes)
     
     PSD_al = PSD_final_alias(
         c_optg,
@@ -523,7 +523,7 @@ def check(reconstruction_matrix_path, telescope_diameter, seeing, target_modulat
     
     print("ALIASING VARIANCE ONE MODE (OPEN LOOP):", sigma_alias_2_one_mode)
     
-    print("ALIASING VARIANCE FROM PSD ONE MODE (OPEN LOOP):", integral_per_mode[0])
+    print("ALIASING VARIANCE FROM PSD ONE MODE (OPEN LOOP):", integral_per_mode[0], "\n")
 
 
 # Function to compare the mode 0 aliasing PSD from data files with the one computed 
@@ -737,14 +737,81 @@ def optg_soul_comparison (file_soul_optical_gain_cube, target_binning,
     plt.legend()
     plt.show()
     
+   
+# Function to compute and plot modal variances by integrating PSD components over 
+# frequency and combining them into total variance per mode.
+
     
+def plot_variance_vs_modes(PSD_out_temp, PSD_out_vibr, PSD_out_alias, PSD_out_meas, 
+                           var_fit, omega_temporal_freqs, actuators_number): 
+
+    var_temp_modes = _integrate_modal_psd(PSD_out_temp, omega_temporal_freqs)
+    var_vibr_modes = _integrate_modal_psd(PSD_out_vibr, omega_temporal_freqs)
+    var_alias_modes = _integrate_modal_psd(PSD_out_alias, omega_temporal_freqs)
+    var_meas_modes = _integrate_modal_psd(PSD_out_meas, omega_temporal_freqs)
+    n_modes = actuators_number
+    var_fit_modes = np.full(n_modes, np.real(var_fit) / n_modes)
     
+    var_total_modes = var_temp_modes + var_alias_modes + var_meas_modes + var_fit_modes
+  
+    # total_temp_variance = np.sum(var_temp_modes)
+    # total_vibr_variance = np.sum(var_vibr_modes)
+    # total_alias_variance = np.sum(var_alias_modes)
+    # total_meas_variance = np.sum(var_meas_modes)
+    # total_fit_variance = np.sum(var_fit_modes)
+    # total_variance = np.sum(var_total_modes)
+    # print ("\nTEMP SUM:", total_temp_variance)
+    # print ("VIBR SUM:", total_vibr_variance)
+    # print ("ALIASING SUM:", total_alias_variance)
+    # print ("MEAS SUM:", total_meas_variance)
+    # print ("FIT SUM:", total_fit_variance)
+    # print ("TOTAL SUM:", total_variance)
     
+    mode_axis = np.arange(n_modes) + 1
+  
+    plt.figure()
+    plt.plot(mode_axis, var_total_modes, label="total")
+    plt.plot(mode_axis, var_temp_modes, label="temporal")
+    plt.plot(mode_axis, var_alias_modes, label="aliasing")
+    plt.plot(mode_axis, var_meas_modes, label="measurement")
+    plt.plot(mode_axis, var_vibr_modes, '--', label="vibration only")
+    plt.plot(mode_axis, var_fit_modes, label="fitting")
+
+
+    plt.xscale("log")
+    plt.yscale("log")
+    plt.xlabel("Mode index")
+    plt.ylabel("Variance [nm^2]")
+    plt.title("Variance vs mode")
+    plt.grid()
+    plt.legend()
+  
+    plt.show()  
     
-    
-    
-    
-    
-    
-    
+      
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
