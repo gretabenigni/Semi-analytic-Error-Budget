@@ -9,7 +9,6 @@ Created on Fri Nov 14 15:17:28 2025
 # pylint: disable=C
 
 import numpy as np
-import matplotlib.pyplot as plt
 
 from src.Functions import seeing_to_r0
 from src.Functions import turbulence_psd
@@ -40,6 +39,7 @@ from src.plots import plot_PSD_OL_CL_mode_0
 from src.plots import plot_psd_vibr_soul
 from src.plots import optg_soul_comparison
 from src.plots import plot_variance_vs_modes
+from src.config_utils import resolve_binning_config
 
 system = "SOUL"
 
@@ -55,6 +55,7 @@ else:
     
     raise RuntimeError("system must be 'ANDES' or 'SOUL'") 
 
+param = resolve_binning_config(param)
 
 print("Parameters loaded successfully.")
   

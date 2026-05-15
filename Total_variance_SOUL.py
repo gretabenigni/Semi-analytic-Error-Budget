@@ -17,7 +17,6 @@ from src.Functions import total_variance
 from src.Functions import interpolate_and_normalize_psd
 from src.Functions import load_parameters
 from src.Functions import load_PSD_windshake
-from src.Functions import radial_order_from_n_modes
 
 from src.Functions import fitting_variance
 from src.Functions import build_transfer_function
@@ -40,8 +39,11 @@ from src.plots import plot_gain_optimization_sweep
 # from src.plots import optg_soul_comparison
 from src.plots import plot_variance_vs_modes
 
+from src.config_utils import resolve_binning_config
+
 
 param = load_parameters('params_Total_variance_SOUL.yaml')
+param = resolve_binning_config(param)
 
 print("Parameters loaded successfully.")
   
