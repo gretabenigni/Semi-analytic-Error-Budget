@@ -1,8 +1,6 @@
 telescope:
   # Primary mirror diameter in [m]
   telescope_diam: 8.222
-  # Collecting area of ELT in [m^2]
-  collect_area: 50
 
 atmosphere:
   # Outer scale in [m]
@@ -29,10 +27,10 @@ wavefront_sensor:
   modal_radius_soul: [0.0, 3.0]
 
 guide_star:
-  # Number of photons per second per collecting area
-  flux_photons: 9.0e12
+  # Number of photons per second per m^2 including total throughput
+  flux_photons: 6e9
   # Guide star magnitude
-  magn: 14.5
+  magn: 8.5
 
 data:
   # Path to reconstruction matrix or noise propagation coefficients vector
@@ -108,7 +106,7 @@ plant:
   # Denominator polynomial coefficients of the plant transfer function
   denominator: [1]
   # Total delay (WFS + RTC + DM) in [frames]
-  total_delay: 3
+  total_delay: 2
 
 frequency_ranges:
   # Minimum exponent for temporal frequency logspace (Hz); max is Nyquist = 1/(2*sampling_time)
@@ -120,7 +118,7 @@ control:
   # Number of corrected modes
   n_modes: 0 # NOTE: defined in binning_configs
   # Sampling time in [s] — also sets the Nyquist frequency
-  sampling_time: 0.00333
+  sampling_time: 0.000667
   # Weights on the 4 pyramid pixels used by the slope computer.
   # Use [1, 1, 1, 1] for classical slopes or [1, 0, 0, 0] for intensity-based slopes.
   slope_computer_weights: [1, 1, 1, 1]
@@ -129,7 +127,7 @@ control:
   gain_min: 0.01
   gain_block_sizes: [2, null] # null means "all remaining modes"
   # Binning
-  bin: 2
+  bin: 1
 
 display:
   # Enable/disable all visualization blocks
