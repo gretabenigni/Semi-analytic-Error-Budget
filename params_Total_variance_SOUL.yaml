@@ -38,7 +38,7 @@ data:
   # Path to reconstruction matrix or noise propagation coefficients vector
   reconstruction_matrix: "src/file_fits/LBT/SOUL_pyr40x40_wl750_fv2.1_ma3_bn1_mn630_noise_prop_coeff.fits"
   # Path to wind-shake PSD (tip and tilt)
-  windshake_psd: "src/file_fits/LBT/LBTelabVibrationsNew.fits"
+  windshake_psd: "src/file_fits/LBT/LBTelabVibrations_2019.fits"
   # Path to sigma slopes from aliasing
   sigma_slopes: "src/file_fits/LBT/slopes_rms_time_avg_all_SOUL.fits"
   # Path to SOUL optical gain cube
