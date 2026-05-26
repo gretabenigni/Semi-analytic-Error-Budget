@@ -50,7 +50,7 @@ plant:
 
 frequency_ranges:
   # Minimum exponent for temporal frequency logspace (Hz); max is Nyquist = 1/(2*sampling_time)
-  temporal_freqs_min: -3
+  temporal_freqs_min: -2
   temporal_freqs_n: 1000
   # Note: maximum is retrieved from sampling_time
 
@@ -58,7 +58,7 @@ control:
   # Number of corrected modes
   n_modes: 4000
   # Sampling time in [s] — also sets the Nyquist frequency
-  sampling_time: 0.001
+  sampling_time: 0.002
   # Weights on the 4 pyramid pixels used by the slope computer.
   # Use [1, 1, 1, 1] for classical slopes or [1, 0, 0, 0] for intensity-based slopes.
   slope_computer_weights: [1, 0, 0, 0]

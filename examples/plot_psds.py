@@ -167,13 +167,13 @@ def plot_system_psds(mode_index=0, plot_inputs=False, show_plot=True,
     var_alias_out = integrate.simpson(PSD_out_alias[mode_index, :], temporal_freqs)
     var_meas_out = integrate.simpson(PSD_out_meas[mode_index, :], temporal_freqs)
 
-    # Print variances for debug
-    print(f"Turbulence Variance (Input):    {np.sqrt(var_temp_in):.2e} nm")
-    print(f"Aliasing Variance (Input):      {np.sqrt(var_alias_in):.2e} nm")
-    print(f"Noise Variance (Input):         {np.sqrt(var_meas_in):.2e} nm")
-    print(f"Turbulence Variance (Output):   {np.sqrt(var_temp_out):.2e} nm")
-    print(f"Aliasing Variance (Output):     {np.sqrt(var_alias_out):.2e} nm")
-    print(f"Noise Variance (Output):        {np.sqrt(var_meas_out):.2e} nm")
+    # Print RMS (square root of variance) for debug
+    print(f"Turbulence RMS (Input):    {np.sqrt(var_temp_in):.2e} nm")
+    print(f"Aliasing RMS (Input):      {np.sqrt(var_alias_in):.2e} nm")
+    print(f"Noise RMS (Input):         {np.sqrt(var_meas_in):.2e} nm")
+    print(f"Turbulence RMS (Output):   {np.sqrt(var_temp_out):.2e} nm")
+    print(f"Aliasing RMS (Output):     {np.sqrt(var_alias_out):.2e} nm")
+    print(f"Noise RMS (Output):        {np.sqrt(var_meas_out):.2e} nm")
 
     # 6. Create Plot
     plt.figure(figsize=(12, 7))
