@@ -30,7 +30,7 @@ guide_star:
   # Number of photons per second per m^2 including total throughput
   flux_photons: 6e9
   # Guide star magnitude
-  magn: 14.5
+  magn: 16.5
 
 data:
   # Path to reconstruction matrix or noise propagation coefficients vector
@@ -118,7 +118,7 @@ control:
   # Number of corrected modes
   n_modes: 0 # NOTE: defined in binning_configs
   # Sampling time in [s] — also sets the Nyquist frequency
-  sampling_time: 0.003333
+  sampling_time: 0.005
   # Weights on the 4 pyramid pixels used by the slope computer.
   # Use [1, 1, 1, 1] for classical slopes or [1, 0, 0, 0] for intensity-based slopes.
   slope_computer_weights: [1, 1, 1, 1]
@@ -127,7 +127,7 @@ control:
   gain_min: 0.01
   gain_block_sizes: [2, null] # null means "all remaining modes"
   # Binning
-  bin: 2
+  bin: 4
 
 display:
   # Enable/disable all visualization blocks
