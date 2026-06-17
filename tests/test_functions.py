@@ -540,8 +540,8 @@ class TestAliasingDefaultsAndOpticalGain(unittest.TestCase):
             w0 ** alpha * (w0 - om_min)
             + (om_max ** (alpha + 1) - w0 ** (alpha + 1)) / (alpha + 1)
         )
-        from src.Functions import DEFAULT_PARALLEL_FRACTION
-        return ((DEFAULT_PARALLEL_FRACTION * sigma_slope) ** 2) / (c ** 2 * integral)
+        
+        return ((sigma_slope) ** 2) / (c ** 2 * integral)
     
 
     @patch("src.Functions.k_coeff_aliasing", return_value=np.array([1.0]))
