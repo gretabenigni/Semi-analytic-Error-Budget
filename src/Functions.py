@@ -7,7 +7,7 @@ Created on Wed Nov 12 15:43:33 2025
 """
 # pylint: disable=C
 
-from dataclasses import dataclass, field
+#from dataclasses import dataclass, field
 
 import yaml
 import os
@@ -30,7 +30,7 @@ DEFAULT_SIGMA_SLOPES_PATH = os.path.join(
     'src',
     'file_fits',
     'ANDES',
-    'slopes_rms_time_avg_all.fits' 
+    'slopes_std_time_avg_all.fits' 
 )
 DEFAULT_ALIASING_ALPHA = - 17 / 3   
 DEFAULT_PARALLEL_FRACTION = 0.25
@@ -925,7 +925,7 @@ def read_sigma_slopes(file_path_sigma_slopes=None):
             seeing_vals = data[0, 0, :]
         else:
             seeing_vals = data[0]
-            
+        
         # ---------------------------------------------------------------------
         # MODULATION RADIUS AXIS EXTRACTION
         # ---------------------------------------------------------------------
@@ -935,6 +935,11 @@ def read_sigma_slopes(file_path_sigma_slopes=None):
         else:
             # Mandatory fallback for the current generation of FITS files
             modal_radius_vals = np.array([0.0, 1.0, 2.0, 3.0, 4.0, 8.0])
+        
+        # Sort modal_radius_vals in ascending order and reorder data accordingly
+        sort_idx = np.argsort(modal_radius_vals)
+        modal_radius_vals = modal_radius_vals[sort_idx]
+        data = data[:, sort_idx, :]  # Reorder data along the modal_radius axis
             
         return data, seeing_vals, modal_radius_vals
 
@@ -943,7 +948,8 @@ def read_sigma_slopes(file_path_sigma_slopes=None):
 
 def double_interpolation_sigma_slope(modal_radius_vals, seeing_vals, data_slopes, 
                                      modulation_radius, seeing):
-    
+       
+       
     interp_sigma = RegularGridInterpolator((modal_radius_vals, seeing_vals), data_slopes[1,:,:], 
                                            bounds_error=False, fill_value=None) 
     sigma_slope_aliasing = float(interp_sigma((modulation_radius, seeing)))       
@@ -1669,7 +1675,7 @@ def interpolate_and_normalize_psd(freqs_interpolation, freqs_original, PSD_origi
     # 1. Number of modes is determined from the original PSD shape, not from a global variable
     n_modes_available = PSD_original.shape[0]
 
-    # 2. It uses n_modes_available to define the shape of the interpolated PSD, ensuring it matches the original data
+    # 2. It uses n_modes_available to define the shape of the interpolated PSD, ensuring it matches the original data
     PSD_interpolated = np.zeros((n_modes_available, len(freqs_interpolation)))
     PSD_interpolated_normalized = np.zeros_like(PSD_interpolated)
     sigma2 = np.zeros(n_modes_available)
