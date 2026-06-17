@@ -33,7 +33,7 @@ DEFAULT_SIGMA_SLOPES_PATH = os.path.join(
     'slopes_std_time_avg_all.fits' 
 )
 DEFAULT_ALIASING_ALPHA = - 17 / 3   
-DEFAULT_PARALLEL_FRACTION = 0.25
+#DEFAULT_PARALLEL_FRACTION = 0.25
 
 
 # Reads the YAML file (where parameters are listed) and returns a dictionary.
@@ -932,6 +932,7 @@ def read_sigma_slopes(file_path_sigma_slopes=None):
         # If a future FITS file has the modulation radii in the second extension, use it.
         if len(hdul) > 1:
             modal_radius_vals = hdul[1].data
+        
         else:
             # Mandatory fallback for the current generation of FITS files
             modal_radius_vals = np.array([0.0, 1.0, 2.0, 3.0, 4.0, 8.0])
@@ -972,8 +973,7 @@ def omega_0(telescope_diameter, windspeed, maximum_radial_order_corrected):
 def compute_k_prime(omega_temp_freq_interval, sigma_slope_alias,
                     telescope_diameter, windspeed,
                     maximum_radial_order_corrected,
-                    alpha=DEFAULT_ALIASING_ALPHA,
-                    parallel_fraction=DEFAULT_PARALLEL_FRACTION):
+                    alpha=DEFAULT_ALIASING_ALPHA):
 
     w_0 = omega_0(telescope_diameter, windspeed, maximum_radial_order_corrected)
     
@@ -984,7 +984,7 @@ def compute_k_prime(omega_temp_freq_interval, sigma_slope_alias,
     
     # We apply the square of the parallel fraction directly to the slope variance,
     # which is equivalent to applying it to k' since k' is proportional to the slope variance.
-    k_prime = (parallel_fraction * sigma_slope_alias) ** 2 / integral_result
+    k_prime =  (sigma_slope_alias) ** 2 / integral_result
     
     return k_prime
     

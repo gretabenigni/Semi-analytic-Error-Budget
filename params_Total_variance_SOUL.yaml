@@ -30,11 +30,7 @@ guide_star:
   # Number of photons per second per m^2 including total throughput
   flux_photons: 6e9
   # Guide star magnitude
-<<<<<<< HEAD
   magn: 7.5
-=======
-  magn: 8.5
->>>>>>> ee6f45ca82b7cc2b8fd96a5446480fb7884aff87
 
 data:
   # Path to reconstruction matrix or noise propagation coefficients vector
