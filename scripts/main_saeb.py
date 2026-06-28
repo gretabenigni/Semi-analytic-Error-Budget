@@ -320,8 +320,19 @@ def run(yaml_file):
 
     total_variance(var_fit, var_temp_atmo_CL + var_vibr_CL, var_alias_CL, var_meas_CL)
 
+    result = {
+        'var_fit':   float(np.real(var_fit)),
+        'var_temp':  float(np.real(var_temp_atmo_CL)),
+        'var_vibr':  float(np.real(var_vibr_CL)),
+        'var_alias': float(np.real(var_alias_CL)),
+        'var_meas':  float(np.real(var_meas_CL)),
+        'var_total': float(np.real(
+            var_fit + var_temp_atmo_CL + var_vibr_CL + var_alias_CL + var_meas_CL
+        )),
+    }
+
     if not display:
-        return
+        return result
 
     var_temp_modes = integrate_modal_psd(PSD_out_temp_atmo, omega_temporal_freqs)
     var_vibr_modes = integrate_modal_psd(PSD_out_vibr, omega_temporal_freqs)
@@ -340,6 +351,8 @@ def run(yaml_file):
 
     if gain_sweeps is not None:
         plot_gain_optimization_sweep(gain_sweeps=gain_sweeps)
+
+    return result
 
 
 def main():
